@@ -1,59 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Japanese - Apple Style</title>
+    <style>
+        /* Apple-style Reset & Typography */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #000; /* Apple 특유의 다크 모드 배경 */
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+            overflow-x: hidden;
+        }
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .hero h1 { font-size: 3rem; font-weight: 600; letter-spacing: -0.02em; }
+        .hero p { color: #86868b; margin-top: 10px; font-size: 1.2rem; }
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+        /* Scroll Container */
+        .phrase-container {
+            padding: 0 10vw;
+        }
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="./">
+        /* Each Phrase Block */
+        .phrase-block {
+            height: 80vh; /* 각 문장이 화면의 큰 부분을 차지하도록 설정 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
+            opacity: 0.2; /* 기본적으로는 흐릿하게 */
+            transform: scale(0.85); /* 기본적으로는 작게 */
+        }
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="nhk_news_comment">
+        /* Active State (스크롤 시 강조될 때) */
+        .phrase-block.active {
+            opacity: 1;
+            transform: scale(1.2); /* 강조될 때 커지는 효과 */
+        }
 
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="nhk_news_comment">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+        .category {
+            font-size: 0.9rem;
+            color: #0071e3; /* Apple Blue */
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+        .japanese {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            word-break: keep-all;
+        }
 
-  <title>NEニュース</title>
-  <link rel="manifest" href="manifest.json">
+        .reading {
+            font-size: 1.2rem;
+            color: #86868b;
+            margin-bottom: 10px;
+        }
 
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = "2060106276";
-  </script>
-  <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer></script>
+        .meaning {
+            font-size: 1.5rem;
+            color: #f5f5f7;
+        }
+
+        footer { height: 50vh; display: flex; align-items: center; justify-content: center; color: #424245; }
+    </style>
 </head>
 <body>
-  <script>
-    window.addEventListener('load', function(ev) {
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
-            appRunner.runApp();
-          });
-        }
-      });
-    });
-  </script>
+
+    <section class="hero">
+        <h1>Essential 50 Phrases</h1>
+        <p>비즈니스 일본어의 완성. 스크롤하여 확인하세요.</p>
+    </section>
+
+    <div class="phrase-container" id="content">
+        </div>
+
+    <footer>
+        <p>© 2026 Business Japanese Professional.</p>
+    </footer>
+
+    <script>
+        const phrases = [
+            { cat: "인사 및 연락", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
+            { cat: "인사 및 연락", jp: "お疲れ様でございます。", rd: "오츠카레사마데 고자이마스", mn: "수고 많으십니다" },
+            { cat: "인사 및 연락", jp: "ご無沙汰しております。", rd: "고부사타 시테 오리마스", mn: "오랜만에 연락 드립니다" },
+            { cat: "인사 및 연락", jp: "突然のご連絡、失礼いたします。", rd: "토츠젠노 고렌라쿠, 시츠레이 이타시마스", mn: "갑작스러운 연락 드려 죄송합니다" },
+            { cat: "인사 및 연락", jp: "担当の〇〇と申します。", rd: "탄토-노 (이름)토 모-시마스", mn: "담당자 OO라고 합니다" },
+            { cat: "인사 및 연락", jp: "折り返し、お電話差し上げます。", rd: "오리카에시, 오덴와 사시아게마스", mn: "다시 전화 드리겠습니다" },
+            { cat: "인사 및 연락", jp: "メールにて失礼いたします。", rd: "메-루니테 시츠레이 이타시마스", mn: "메일로 인사 드립니다" },
+            { cat: "인사 및 연락", jp: "ご確認をお願いいたします。", rd: "고카쿠닌오 오네가이 이타시마스", mn: "확인을 부탁드립니다" },
+            { cat: "인사 및 연락", jp: "周知のほど、お願いいたします。", rd: "슈-치노 호도, 오네가이 이타시마스", mn: "공지(주지) 부탁드립니다" },
+            { cat: "인사 및 연락", jp: "取り急ぎ、ご連絡まで。", rd: "토리이소기, 고렌라쿠마데", mn: "우선 급히 연락 드립니다" },
+            { cat: "방문 및 회의", jp: "本日はお時間をいただきありがとうございます。", rd: "혼지츠와 오지칸오 이타다키 아리가토-", mn: "오늘 시간을 내주셔서 감사합니다" },
+            { cat: "방문 및 회의", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
+            { cat: "방문 및 회의", jp: "どうぞ、お入りください。", rd: "도-조, 오하이리 쿠다사이", mn: "어서 들어오십시오" },
+            { cat: "방문 및 회의", jp: "少々お待ちいただけますか。", rd: "쇼-쇼- 오마치 이타다케마스카", mn: "잠시 기다려 주시겠습니까?" },
+            { cat: "방문 및 회의", jp: "こちらの資料をご覧ください。", rd: "코치라노 시료-오 고란쿠다사이", mn: "이 자료를 봐 주십시오" },
+            { cat: "방문 및 회의", jp: "ご意見をお聞かせください。", rd: "고이켄오 오키카세 쿠다사이", mn: "의견을 들려주십시오" },
+            { cat: "방문 및 회의", jp: "概ね賛成です。", rd: "오오무네 산세이데스", mn: "대체로 찬성합니다" },
+            { cat: "방문 및 회의", jp: "検討の余地があります。", rd: "켄토-노 요치가 아리마스", mn: "검토의 여지가 있습니다" },
+            { cat: "방문 및 회의", jp: "本日の議題は以下の通りです。", rd: "혼지츠노 기다이와 이카노 토-리데스", mn: "오늘의 의제는 다음과 같습니다" },
+            { cat: "방문 및 회의", jp: "次回の打ち合わせについて。", rd: "지카이노 우치아와세니 츠이테", mn: "다음 회의에 대하여" },
+            { cat: "요청 및 문의", jp: "お力添えをいただけますでしょうか。", rd: "오치카라조에오 이타다케마스데쇼-카", mn: "도움을 주실 수 있겠습니까?" },
+            { cat: "요청 및 문의", jp: "左記の通り、お願いいたします。", rd: "사키노 토-리, 오네가이 이타시마스", mn: "앞서 언급한 내용대로 부탁드립니다" },
+            { cat: "요청 및 문의", jp: "至急、ご確認いただけますか。", rd: "시큐-, 고카쿠닌 이타다케마스카", mn: "급히 확인해 주실 수 있습니까?" },
+            { cat: "요청 및 문의", jp: "詳細を教えていただけますか。", rd: "쇼-사이오 오시에테 이타다케마스카", mn: "상세 내용을 알려주시겠습니까?" },
+            { cat: "요청 및 문의", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
+            { cat: "요청 및 문의", jp: "念のため、確認させてください。", rd: "넨노타메, 카쿠닌 사세테 쿠다사이", mn: "만약을 위해 확인하겠습니다" },
+            { cat: "요청 및 문의", jp: "お忙しいところ恐縮ですが。", rd: "오이소가시이 토코로 쿄-슈쿠데스가", mn: "바쁘신 와중에 죄송합니다만" },
+            { cat: "요청 및 문의", jp: "折り返しご連絡いただけますか。", rd: "오리카에시 고렌라쿠 이타다케마스카", mn: "회신(답전화) 주시겠습니까?" },
+            { cat: "요청 및 문의", jp: "締め切りを延ばしていただけますか。", rd: "시메키리오 노바시테 이타다케마스카", mn: "마감 기한을 연장해 주시겠습니까?" },
+            { cat: "요청 및 문의", jp: "ご都合いかがでしょうか。", rd: "고츠고- 이카가데쇼-카", mn: "사정(시간)이 어떠신가요?" },
+            { cat: "승낙 및 거절", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다 (격식 있는 승낙)" },
+            { cat: "승낙 및 거절", jp: "かしこまりました。", rd: "카시코마리마시타", mn: "잘 알겠습니다 (매우 정중)" },
+            { cat: "승낙 및 거절", jp: "喜んでお引き受けいたします。", rd: "요로콘데 오히키우케 이타시마스", mn: "기꺼이 맡겠습니다" },
+            { cat: "승낙 및 거절", jp: "お役に立てれば幸いです。", rd: "오야쿠니 타테레바 사이와이데스", mn: "도움이 된다면 기쁘겠습니다" },
+            { cat: "승낙 및 거절", jp: "あいにくですが、先約がございます。", rd: "아이니쿠데스가, 센야쿠가 고자이마스", mn: "죄송합니다만, 선약이 있습니다" },
+            { cat: "승낙 및 거절", jp: "今回は見送らせていただきます。", rd: "콘카이와 미오쿠라세테 이타다키마스", mn: "이번에는 사양하겠습니다" },
+            { cat: "승낙 및 거절", jp: "ご期待に沿えず、申し訳ございません。", rd: "고키타이니 소에즈, 모-시와케", mn: "기대에 부응하지 못해 죄송합니다" },
+            { cat: "승낙 및 거절", jp: "いたしかねます。", rd: "이타시카네마스", mn: "하기 어렵습니다" },
+            { cat: "승낙 및 거절", jp: "またの機会によろしくお願いします。", rd: "마타노 키카이니 요로시쿠", mn: "다음 기회에 부탁드립니다" },
+            { cat: "승낙 및 거절", jp: "検討させていただきます。", rd: "켄토- 사세테 이타다키마스", mn: "검토해 보겠습니다" },
+            { cat: "사과 및 감사", jp: "誠に申し訳ございません。", rd: "마코토니 모-시와케 고자이마센", mn: "진심으로 사과드립니다" },
+            { cat: "사과 및 감사", jp: "失礼いたしました。", rd: "시츠레이 이타시마시타", mn: "실례했습니다" },
+            { cat: "사과 및 감사", jp: "以後、気をつけます。", rd: "이고, 키오츠케마스", mn: "이후 주의하겠습니다" },
+            { cat: "사과 및 감사", jp: "ご迷惑をおかけしました。", rd: "고메이와쿠오 오카케시마시타", mn: "폐를 끼쳤습니다" },
+            { cat: "사과 및 감사", jp: "深くお詫び申し上げます。", rd: "후카쿠 오와비 모-시아게마스", mn: "깊이 사죄드립니다" },
+            { cat: "사과 및 감사", jp: "心より感謝申し上げます。", rd: "코코로요리 칸샤 모-시아게마스", mn: "진심으로 감사드립니다" },
+            { cat: "사과 및 감사", jp: "おかげさまで助かりました。", rd: "오카게사마데 타스카리마시타", mn: "덕분에 도움이 되었습니다" },
+            { cat: "사과 및 감사", jp: "過分なご評価をいただき。", rd: "카분나 고효-카오 이타다키", mn: "과분한 평가를 해 주셔서" },
+            { cat: "사과 및 감사", jp: "貴重なご意見、ありがとうございます。", rd: "키쵸-나 고이켄, 아리가토-", mn: "귀중한 의견 감사합니다" },
+            { cat: "사과 및 감사", jp: "今後ともよろしくお願いいたします。", rd: "콩고토모 요로시쿠 오네가이", mn: "앞으로도 잘 부탁드립니다" }
+        ];
+
+        const contentDiv = document.getElementById('content');
+
+        // 1. 블록 생성
+        phrases.forEach(p => {
+            const block = document.createElement('div');
+            block.className = 'phrase-block';
+            block.innerHTML = `
+                <div class="category">${p.cat}</div>
+                <div class="japanese">${p.jp}</div>
+                <div class="reading">${p.rd}</div>
+                <div class="meaning">${p.mn}</div>
+            `;
+            contentDiv.appendChild(block);
+        });
+
+        // 2. Intersection Observer 설정 (스크롤 감지 엔진)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.6 // 요소의 60%가 화면 중앙 근처에 보일 때 실행
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                } else {
+                    entry.target.classList.remove('active');
+                }
+            });
+        }, observerOptions);
+
+        // 모든 블록에 관찰자 등록
+        document.querySelectorAll('.phrase-block').forEach(block => {
+            observer.observe(block);
+        });
+    </script>
 </body>
 </html>
