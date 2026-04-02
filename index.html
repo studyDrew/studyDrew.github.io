@@ -8,20 +8,64 @@
         /* Apple-style Reset & Typography */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: #000; /* Apple 특유의 다크 모드 배경 */
+            background-color: #000;
             color: #fff;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
             overflow-x: hidden;
         }
 
+        /* --- Apple Navigation Bar Style --- */
+        .apple-nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 9999;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-content {
+            max-width: 800px; 
+            margin: 0 auto;
+            height: 100%;
+        }
+
+        .nav-list {
+            display: flex;
+            justify-content: space-around; 
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0 22px;
+            height: 100%;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #f5f5f7;
+            font-size: 24px;
+            font-weight: 500;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-link.active, .nav-link:hover {
+            opacity: 1;
+        }
+
         /* Hero Section */
         .hero {
-            height: 100vh;
+            height: 60vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
+            padding-top: 60px;
         }
         .hero h1 { font-size: 3rem; font-weight: 600; letter-spacing: -0.02em; }
         .hero p { color: #86868b; margin-top: 10px; font-size: 1.2rem; }
@@ -29,37 +73,37 @@
         /* Scroll Container */
         .phrase-container {
             padding: 0 10vw;
+            min-height: 100vh;
         }
 
         /* Each Phrase Block */
         .phrase-block {
-            height: 80vh; /* 각 문장이 화면의 큰 부분을 차지하도록 설정 */
+            height: 70vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
-            opacity: 0.2; /* 기본적으로는 흐릿하게 */
-            transform: scale(0.85); /* 기본적으로는 작게 */
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
+            opacity: 0.1;
+            transform: scale(0.85);
         }
 
-        /* Active State (스크롤 시 강조될 때) */
         .phrase-block.active {
             opacity: 1;
-            transform: scale(1.2); /* 강조될 때 커지는 효과 */
+            transform: scale(1.1);
         }
 
         .category {
             font-size: 0.9rem;
-            color: #0071e3; /* Apple Blue */
+            color: #2997ff;
             font-weight: 600;
             margin-bottom: 20px;
             text-transform: uppercase;
         }
 
         .japanese {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 600;
             margin-bottom: 15px;
             word-break: keep-all;
@@ -72,28 +116,38 @@
         }
 
         .meaning {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             color: #f5f5f7;
         }
 
-        footer { height: 50vh; display: flex; align-items: center; justify-content: center; color: #424245; }
+        footer { height: 30vh; display: flex; align-items: center; justify-content: center; color: #424245; }
     </style>
 </head>
 <body>
 
+    <nav class="apple-nav">
+        <div class="nav-content">
+            <ul class="nav-list">
+                <li><a class="nav-link active" onclick="filterPhrases('all', this)">すべて</a></li>
+                <li><a class="nav-link" onclick="filterPhrases('jp', this)">日本語のみ</a></li>
+                <li><a class="nav-link" onclick="filterPhrases('ko', this)">韓国語のみ</a></li>
+            </ul>
+        </div>
+    </nav>
+
     <section class="hero">
-        <h1>Essential 50 Phrases</h1>
-        <p>비즈니스 일본어의 완성. 스크롤하여 확인하세요.</p>
+        <h1 id="hero-title">Essential Phrases</h1>
+        <p id="hero-desc">비즈니스 일본어의 완성. 스크롤하여 확인하세요.</p>
     </section>
 
-    <div class="phrase-container" id="content">
-        </div>
+    <div class="phrase-container" id="content"></div>
 
     <footer>
         <p>© 2026 Business Japanese Professional.</p>
     </footer>
 
     <script>
+        // 데이터셋은 이전과 동일하게 유지
         const phrases = [
             { cat: "인사 및 연락", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
             { cat: "인사 및 연락", jp: "お疲れ様でございます。", rd: "오츠카레사마데 고자이마스", mn: "수고 많으십니다" },
@@ -148,41 +202,70 @@
         ];
 
         const contentDiv = document.getElementById('content');
+        let observer;
 
-        // 1. 블록 생성
-        phrases.forEach(p => {
-            const block = document.createElement('div');
-            block.className = 'phrase-block';
-            block.innerHTML = `
-                <div class="category">${p.cat}</div>
-                <div class="japanese">${p.jp}</div>
-                <div class="reading">${p.rd}</div>
-                <div class="meaning">${p.mn}</div>
-            `;
-            contentDiv.appendChild(block);
-        });
+        function renderPhrases(mode) {
+            contentDiv.innerHTML = '';
+            if (observer) observer.disconnect();
 
-        // 2. Intersection Observer 설정 (스크롤 감지 엔진)
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.6 // 요소의 60%가 화면 중앙 근처에 보일 때 실행
-        };
+            phrases.forEach(p => {
+                const block = document.createElement('div');
+                block.className = 'phrase-block';
+                
+                let htmlContent = `<div class="category">${p.cat}</div>`;
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                } else {
-                    entry.target.classList.remove('active');
+                if (mode === 'all') {
+                    // 모두 표시 (전체 데이터)
+                    htmlContent += `
+                        <div class="japanese">${p.jp}</div>
+                        <div class="reading">${p.rd}</div>
+                        <div class="meaning">${p.mn}</div>
+                    `;
+                } else if (mode === 'jp') {
+                    // 일본어만 (발음 rd 제외)
+                    htmlContent += `
+                        <div class="japanese" style="font-size: 3.5rem; margin-bottom: 0;">${p.jp}</div>
+                    `;
+                } else if (mode === 'ko') {
+                    // 한국어만
+                    htmlContent += `
+                        <div class="meaning" style="font-size: 3.5rem; color: #fff;">${p.mn}</div>
+                    `;
                 }
+                
+                block.innerHTML = htmlContent;
+                contentDiv.appendChild(block);
             });
-        }, observerOptions);
 
-        // 모든 블록에 관찰자 등록
-        document.querySelectorAll('.phrase-block').forEach(block => {
-            observer.observe(block);
-        });
+            setupObserver();
+        }
+
+        function setupObserver() {
+            const options = { threshold: 0.6 };
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('active');
+                    else entry.target.classList.remove('active');
+                });
+            }, options);
+
+            document.querySelectorAll('.phrase-block').forEach(block => observer.observe(block));
+        }
+
+        function filterPhrases(mode, element) {
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            element.classList.add('active');
+
+            const title = document.getElementById('hero-title');
+            if(mode === 'jp') title.innerText = "日本語のみ";
+            else if(mode === 'ko') title.innerText = "韓国語のみ";
+            else title.innerText = "Essential Phrases";
+
+            renderPhrases(mode);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        renderPhrases('all');
     </script>
 </body>
 </html>
