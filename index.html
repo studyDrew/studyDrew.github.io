@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese - Apple List Style</title>
+    <title>Business Japanese - Apple Swipe List</title>
     <style>
+        /* Apple-style Reset */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             background-color: #000;
             color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", "SF Pro Display", sans-serif;
             line-height: 1.5;
+            user-select: none; /* 드래그 시 텍스트 선택 방지 */
         }
 
-        /* Nav */
+        /* Navigation */
         .apple-nav {
             position: fixed; top: 0; width: 100%; height: 60px;
             background-color: rgba(0, 0, 0, 0.8);
@@ -24,37 +26,37 @@
         .nav-link { color: #f5f5f7; font-size: 16px; opacity: 0.5; text-decoration: none; cursor: pointer; transition: 0.3s; }
         .nav-link.active { opacity: 1; font-weight: 600; }
 
-        /* Content Container */
-        .container { padding-top: 80px; max-width: 600px; margin: 0 auto; }
-        .hero-section { padding: 20px; text-align: left; }
-        .hero-section h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-        .hero-section p { color: #86868b; font-size: 14px; }
+        /* Container */
+        .container { padding-top: 80px; max-width: 600px; margin: 0 auto; min-height: 100vh; }
+        .hero-section { padding: 20px 20px 10px 20px; }
+        .hero-section h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.5px; }
+        .hero-section p { color: #86868b; font-size: 15px; margin-top: 5px; }
 
-        /* Swipe List Style */
-        .list-container { margin-top: 20px; overflow: hidden; }
+        /* List Styling */
+        .list-container { margin-top: 20px; border-top: 0.5px solid #333; }
         
         .list-item-wrapper {
             position: relative;
-            display: flex;
-            align-items: center;
-            background-color: #1c1c1e; /* iOS Grouped Table Cell Color */
-            margin-bottom: 1px;
+            background-color: #ff3b30; /* 삭제 버튼 배경색 */
             overflow: hidden;
-            transition: transform 0.3s ease-out;
+            border-bottom: 0.5px solid #333;
         }
 
         .list-item-content {
+            position: relative;
             width: 100%;
             padding: 16px 20px;
-            background-color: #1c1c1e;
+            background-color: #000; /* 셀 기본 배경 */
             z-index: 2;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: grab;
         }
+        .list-item-content:active { cursor: grabbing; }
 
-        .category { font-size: 11px; color: #2997ff; font-weight: 600; margin-bottom: 4px; }
-        .japanese { font-size: 17px; font-weight: 500; margin-bottom: 2px; }
+        .category { font-size: 11px; color: #2997ff; font-weight: 600; margin-bottom: 4px; text-transform: uppercase; }
+        .japanese { font-size: 18px; font-weight: 500; margin-bottom: 2px; color: #fff; }
         .reading { font-size: 13px; color: #86868b; }
-        .meaning { font-size: 15px; color: #f5f5f7; margin-top: 4px; }
+        .meaning { font-size: 16px; color: #f5f5f7; margin-top: 6px; }
 
         /* Delete Button */
         .delete-btn {
@@ -74,10 +76,7 @@
             cursor: pointer;
         }
 
-        /* Swipe State */
-        .swiped .list-item-content { transform: translateX(-80px); }
-
-        footer { padding: 40px 20px; text-align: center; color: #424245; font-size: 12px; }
+        footer { padding: 60px 20px; text-align: center; color: #424245; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -93,26 +92,32 @@
     <div class="container">
         <section class="hero-section">
             <h1 id="hero-title">Phrases</h1>
-            <p>왼쪽으로 밀어서 삭제할 수 있습니다.</p>
+            <p>드래그하거나 밀어서 삭제하세요.</p>
         </section>
 
         <div class="list-container" id="list-content"></div>
     </div>
 
-    <footer><p>© 2026 Business Japanese Pro</p></footer>
+    <footer><p>© 2026 Business Japanese Professional</p></footer>
 
     <script>
+        // 데이터셋 (id 추가됨)
         let phrases = [
             { id: 1, cat: "인사 및 연락", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
             { id: 2, cat: "인사 및 연락", jp: "お疲れ様でございます。", rd: "오츠카레사마데 고자이마스", mn: "수고 많으십니다" },
-            { id: 3, cat: "방문 및 회의", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
-            { id: 4, cat: "요청 및 문의", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
-            { id: 5, cat: "승낙 및 거절", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" }
-            // ... 데이터는 자유롭게 추가 가능
+            { id: 3, cat: "인사 및 연락", jp: "ご無沙汰しております。", rd: "고부사타 시테 오리마스", mn: "오랜만에 연락 드립니다" },
+            { id: 4, cat: "방문 및 회의", jp: "本日はお時間をいただきありがとうございます。", rd: "혼지츠와 오지칸오 이타다키 아리가토-", mn: "오늘 시간을 내주셔서 감사합니다" },
+            { id: 5, cat: "방문 및 회의", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
+            { id: 6, cat: "요청 및 문의", jp: "お力添えをいただけますでしょうか。", rd: "오치카라조에오 이타다케마스데쇼-카", mn: "도움을 주실 수 있겠습니까?" },
+            { id: 7, cat: "요청 및 문의", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
+            { id: 8, cat: "승낙 및 거절", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" },
+            { id: 9, cat: "승낙 및 거절", jp: "あいにくですが、先約がございます。", rd: "아이니쿠데스가, 센야쿠가 고자이마스", mn: "죄송합니다만, 선약이 있습니다" },
+            { id: 10, cat: "사과 및 감사", jp: "誠に申し訳ございません。", rd: "마코토니 모-시와케 고자이마센", mn: "진심으로 사과드립니다" }
         ];
 
         const listDiv = document.getElementById('list-content');
         let currentMode = 'all';
+        let activeSwipeItem = null;
 
         function renderList(mode = 'all') {
             currentMode = mode;
@@ -120,69 +125,98 @@
             phrases.forEach(p => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'list-item-wrapper';
-                wrapper.dataset.id = p.id;
-
-                let innerHTML = `
-                    <div class="list-item-content">
-                        <div class="category">${p.cat}</div>
-                `;
-
+                
+                let contentHTML = `<div class="list-item-content"><div class="category">${p.cat}</div>`;
+                
                 if (mode === 'all' || mode === 'jp') {
-                    innerHTML += `<div class="japanese">${p.jp}</div>`;
-                    if(mode !== 'ko') innerHTML += `<div class="reading">${p.rd}</div>`;
+                    contentHTML += `<div class="japanese">${p.jp}</div>`;
+                    if(mode !== 'ko') contentHTML += `<div class="reading">${p.rd}</div>`;
                 }
                 if (mode === 'all' || mode === 'ko') {
-                    innerHTML += `<div class="meaning">${p.mn}</div>`;
+                    contentHTML += `<div class="meaning">${p.mn}</div>`;
                 }
-
-                innerHTML += `</div><div class="delete-btn" onclick="deleteItem(${p.id})">삭제</div>`;
-                wrapper.innerHTML = innerHTML;
+                contentHTML += `</div><div class="delete-btn" onclick="deleteItem(${p.id})">삭제</div>`;
                 
-                // 터치 이벤트 등록
-                addSwipeEvents(wrapper);
+                wrapper.innerHTML = contentHTML;
+                setupInteraction(wrapper);
                 listDiv.appendChild(wrapper);
             });
         }
 
-        let touchStartX = 0;
-        let activeSwipeItem = null;
+        function setupInteraction(wrapper) {
+            const content = wrapper.querySelector('.list-item-content');
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
 
-        function addSwipeEvents(el) {
-            el.addEventListener('touchstart', (e) => {
-                // 다른 아이템이 열려있으면 닫기
-                if (activeSwipeItem && activeSwipeItem !== el) {
-                    activeSwipeItem.classList.remove('swiped');
+            // 시작 (터치/마우스 공통)
+            const onStart = (e) => {
+                // 이미 열린 다른 아이템 닫기
+                if (activeSwipeItem && activeSwipeItem !== content) {
+                    activeSwipeItem.style.transform = 'translateX(0px)';
                 }
-                touchStartX = e.touches[0].clientX;
-            });
-
-            el.addEventListener('touchmove', (e) => {
-                let touchMoveX = e.touches[0].clientX;
-                let diff = touchStartX - touchMoveX;
                 
-                if (diff > 50) { // 왼쪽으로 밀 때
-                    el.classList.add('swiped');
-                    activeSwipeItem = el;
-                } else if (diff < -50) { // 오른쪽으로 밀 때 닫기
-                    el.classList.remove('swiped');
+                isDragging = true;
+                startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+                content.style.transition = 'none';
+            };
+
+            // 이동 (터치/마우스 공통)
+            const onMove = (e) => {
+                if (!isDragging) return;
+                currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+                const diff = startX - currentX;
+
+                if (diff > 0) { // 왼쪽으로 드래그할 때만
+                    const moveVal = Math.min(diff, 120); // 최대 드래그 범위 제한
+                    content.style.transform = `translateX(-${moveVal}px)`;
+                } else {
+                    content.style.transform = `translateX(0px)`;
                 }
-            });
+            };
+
+            // 종료 (터치/마우스 공통)
+            const onEnd = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                
+                const finalDiff = startX - currentX;
+                if (finalDiff > 60) { // 60px 이상 밀었으면 고정
+                    content.style.transform = 'translateX(-80px)';
+                    activeSwipeItem = content;
+                } else {
+                    content.style.transform = 'translateX(0px)';
+                }
+            };
+
+            // 마우스 이벤트
+            content.addEventListener('mousedown', onStart);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+
+            // 터치 이벤트
+            content.addEventListener('touchstart', onStart);
+            content.addEventListener('touchmove', onMove);
+            content.addEventListener('touchend', onEnd);
         }
 
         function deleteItem(id) {
-            if(confirm("이 문장을 삭제하시겠습니까?")) {
-                phrases = phrases.filter(p => p.id !== id);
-                renderList(currentMode);
-            }
+            phrases = phrases.filter(p => p.id !== id);
+            renderList(currentMode);
+            activeSwipeItem = null;
         }
 
         function filterList(mode, btn) {
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             btn.classList.add('active');
+            const title = document.getElementById('hero-title');
+            title.innerText = mode === 'jp' ? "日本語" : mode === 'ko' ? "한국어" : "Phrases";
             renderList(mode);
         }
 
-        renderList();
+        // 초기 렌더링
+        renderList('all');
     </script>
 </body>
 </html>
