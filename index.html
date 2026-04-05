@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese Pro - FAST SINGULARITY</title>
+    <title>Business Japanese Pro - SHRINK SINGULARITY</title>
     <style>
         /* --- 공통 스타일 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -45,7 +45,7 @@
             transform-style: preserve-3d;
         }
         .category { font-size: 10px; color: #03dac6; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
-        .japanese { font-size: 18px; font-weight: 500; color: #fff; }
+        .japanese { font-size: 18px; font-weight: 500; color: #fff; transition: font-size 0.4s ease; }
         .reading { font-size: 13px; color: #86868b; }
         .meaning { font-size: 16px; color: #f5f5f7; margin-top: 4px; }
         
@@ -55,18 +55,28 @@
             font-size: 11px; font-weight: 900; z-index: 1; cursor: pointer; letter-spacing: 1px;
         }
 
-        /* 🌀 고속 시공간 왜곡 애니메이션 (0.4s) */
+        /* 🌀 2배속 시공간 왜곡 + 점진적 축소 애니메이션 */
         .singularity-active {
             pointer-events: none !important;
-            animation: singularityWarp 0.4s ease-in forwards, glitchEffect 0.1s infinite;
+            animation: singularityShrinkWarp 0.4s ease-in forwards, glitchEffect 0.1s infinite;
+        }
+
+        /* 텍스트 요소들 별도로 크기 감소 */
+        .singularity-active div {
+            animation: textShrink 0.4s ease-in forwards;
         }
 
         .screen-shake { animation: screenShake 0.05s infinite; }
 
-        @keyframes singularityWarp {
+        @keyframes singularityShrinkWarp {
             0% { transform: scale(1) rotate(0deg) skew(0deg); filter: hue-rotate(0deg) blur(0); opacity: 1; }
-            50% { transform: scale(1.2) rotate(10deg) skew(20deg); filter: hue-rotate(180deg) brightness(2.5); }
-            100% { transform: scale(0) rotate(1440deg) skew(60deg); filter: hue-rotate(360deg) blur(40px); opacity: 0; }
+            50% { transform: scale(0.6) rotate(20deg) skew(30deg); filter: hue-rotate(180deg) brightness(2.5); }
+            100% { transform: scale(0) rotate(1440deg) skew(90deg); filter: hue-rotate(360deg) blur(50px); opacity: 0; }
+        }
+
+        @keyframes textShrink {
+            0% { transform: scale(1); }
+            100% { transform: scale(0.1); }
         }
 
         @keyframes glitchEffect {
@@ -108,7 +118,7 @@
     <div class="container" id="main-container">
         <section class="hero-section" id="hero">
             <h1 id="hero-title">Phrases</h1>
-            <p id="hero-desc">지식을 데이터 소거(Fast Singularity) 처리하세요.</p>
+            <p id="hero-desc">데이터가 소멸하며 점차 작아집니다.</p>
         </section>
 
         <div id="list-view" class="list-container"></div>
@@ -228,10 +238,8 @@
             document.body.classList.add('screen-shake');
             content.classList.add('singularity-active');
             
-            // 2배 빠른 햅틱 피드백
             if (navigator.vibrate) navigator.vibrate([20, 10, 20]);
 
-            // 애니메이션 0.4s 완료 후 즉시 정리
             setTimeout(() => {
                 document.body.classList.remove('screen-shake');
                 phrases = phrases.filter(p => p.id !== id);
@@ -239,7 +247,7 @@
                 else renderList(currentMode);
                 isWarping = false;
                 activeSwipeContent = null;
-            }, 450); 
+            }, 420); // 0.4s 애니메이션에 맞춘 지연
         }
 
         function renderStudyMode() {
