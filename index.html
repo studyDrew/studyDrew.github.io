@@ -3,145 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese - ALL IMPACT EDITION</title>
+    <title>Business Japanese - 2x2 FLASH CARD IMPACT</title>
     <style>
-        /* --- 공통 및 네비게이션 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; overflow-x: hidden; }
+        body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; }
+        
         .apple-nav { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); z-index: 9999; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
-        .nav-list { display: flex; justify-content: space-around; align-items: center; list-style: none; height: 100%; }
-        .nav-mode { color: #fff; opacity: 1; background-color: #6200ee; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
+        .nav-list { display: flex; justify-content: center; align-items: center; height: 100%; }
+        .nav-mode { color: #fff; background-color: #6200ee; padding: 4px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; }
 
-        /* --- ⚡ 학습모드 (전체 요소 3배 크기 + 동시 낙하 효과) --- */
-        .study-container { display: block; height: calc(100vh - 60px); overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; margin-top: 60px; }
+        .study-container { 
+            height: calc(100vh - 60px); overflow-y: scroll; 
+            scroll-snap-type: y mandatory; scrollbar-width: none; margin-top: 60px; 
+        }
         .study-container::-webkit-scrollbar { display: none; }
 
+        .study-section { 
+            height: calc(100vh - 60px); scroll-snap-align: start; 
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+        }
+
+        /* --- 🃏 플래시 카드 3D 설정 --- */
         .phrase-block {
-            height: calc(100vh - 60px); display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; padding: 0 20px; scroll-snap-align: start; position: relative;
-            --study-scale: 3.0; 
+            perspective: 1000px; /* 3D 효과 깊이 */
+            position: relative; border: 0.2px solid #1c1c1e;
+        }
+        
+        .card-inner {
+            position: relative; width: 100%; height: 100%;
+            text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d; cursor: pointer;
         }
 
-        /* [핵심] 모든 문장 요소에 낙하 애니메이션 공통 적용 */
-        .category, .japanese, .reading, .meaning {
-            opacity: 0; 
-            transform: translateY(-500px) scale(2);
-            word-break: keep-all;
-            transition: none;
+        /* 카드 뒤집기 상태 */
+        .phrase-block.flipped .card-inner { transform: rotateY(180deg); }
+
+        .card-front, .card-back {
+            position: absolute; width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; backface-visibility: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px;
         }
 
-        /* 활성화 시 모든 요소 동시 낙하 */
-        .phrase-block.active .category,
-        .phrase-block.active .japanese,
-        .phrase-block.active .reading,
-        .phrase-block.active .meaning {
-            animation: jobsDropAll 0.5s cubic-bezier(0.2, 0, 0.4, 1.4) forwards;
+        /* 카드 앞면 */
+        .card-front { background-color: #000; z-index: 2; }
+        
+        /* 카드 뒷면 (일본어 전용) */
+        .card-back {
+            background-color: #1c1c1e; color: #03dac6;
+            transform: rotateY(180deg); z-index: 1;
         }
 
-        @keyframes jobsDropAll {
-            0% { opacity: 0; transform: translateY(-500px) scale(2); }
+        /* [애니메이션] 낙하 효과 (앞면에만 적용) */
+        .card-front > div {
+            opacity: 0; transform: translateY(-300px) scale(1.5);
+            transition: none; word-break: keep-all;
+        }
+
+        .phrase-block.active .card-front > div {
+            animation: jobsDrop 0.5s cubic-bezier(0.2, 0, 0.4, 1.4) forwards;
+        }
+
+        /* 4단계 시차 */
+        .delay-0.active .card-front > div { animation-delay: 0s; }
+        .delay-1.active .card-front > div { animation-delay: 0.4s; }
+        .delay-2.active .card-front > div { animation-delay: 0.8s; }
+        .delay-3.active .card-front > div { animation-delay: 1.2s; }
+
+        @keyframes jobsDrop {
+            0% { opacity: 0; transform: translateY(-300px) scale(1.5); }
             60% { opacity: 1; transform: translateY(0) scale(1); }
-            80% { transform: translateY(-15px) scale(1.02); }
+            80% { transform: translateY(-10px); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* 폰트 스타일 및 3배 크기 적용 */
-        .category { font-size: 16px; color: #6200ee; margin-bottom: 20px; letter-spacing: 5px; font-weight: 900; }
-        .japanese { font-size: calc(1.2rem * var(--study-scale)); font-weight: 800; line-height: 1.1; margin-bottom: 10px; }
-        .reading { font-size: calc(0.5rem * var(--study-scale)); color: #aaa; margin-bottom: 30px; }
-        .meaning { 
-            font-size: calc(0.9rem * var(--study-scale)); color: #03dac6; 
-            font-weight: 700; border-top: 3px solid #333; padding-top: 20px; 
-        }
+        /* 폰트 스타일 (2.0배 기준) */
+        .category { font-size: 10px; color: #6200ee; margin-bottom: 10px; letter-spacing: 2px; font-weight: 800; }
+        .meaning { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .reading { font-size: 1.1rem; color: #888; }
+        
+        /* 뒷면 일본어 크기 (더 크게) */
+        .japanese-back { font-size: 2.2rem; font-weight: 800; line-height: 1.2; }
 
-        /* [먼지 효과] 1.5배 넓게, 1.3배 진하게 */
-        .dust-container { position: absolute; width: 100%; height: 20px; top: 55%; pointer-events: none; }
-        .dust-particle {
-            position: absolute; left: 50%; 
-            background: rgba(220, 220, 220, 0.7); /* 진한 농도 */
-            border-radius: 50%; filter: blur(8px); opacity: 0;
-        }
+        /* [먼지 효과] */
+        .dust-container { position: absolute; width: 100%; height: 10px; bottom: 20%; pointer-events: none; z-index: 3; }
+        .dust-particle { position: absolute; left: 50%; background: rgba(220, 220, 220, 0.6); border-radius: 50%; filter: blur(5px); opacity: 0; }
+        .phrase-block.active .dust-particle { animation: dustBurst 0.8s ease-out forwards; }
+        .delay-0.active .dust-particle { animation-delay: 0.35s; }
+        .delay-1.active .dust-particle { animation-delay: 0.75s; }
+        .delay-2.active .dust-particle { animation-delay: 1.15s; }
+        .delay-3.active .dust-particle { animation-delay: 1.55s; }
 
-        .phrase-block.active .dust-particle {
-            animation: dustBurstImpact 1s ease-out forwards;
-            animation-delay: 0.35s;
-        }
-
-        @keyframes dustBurstImpact {
+        @keyframes dustBurst {
             0% { opacity: 0; transform: translate(0, 0) scale(1); }
-            20% { opacity: 0.9; }
-            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(6); }
+            20% { opacity: 0.8; }
+            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(4); }
         }
-
-        /* 화면 흔들림(강력한 Impact) */
-        .phrase-block.active { animation: superShake 0.15s 0.35s 2; }
-        @keyframes superShake { 0% { transform: translateY(0); } 50% { transform: translateY(8px); } 100% { transform: translateY(0); } }
-
     </style>
 </head>
 <body>
 
     <nav class="apple-nav">
-        <ul class="nav-list">
-            <li><span class="nav-mode">학습모드 (IMPACT)</span></li>
-        </ul>
+        <div class="nav-list"><span class="nav-mode">FLASH CARD STUDY (2x2)</span></div>
     </nav>
 
-    <div class="container">
-        <div id="study-view" class="study-container"></div>
-    </div>
+    <div id="study-view" class="study-container"></div>
 
     <script>
-        let phrases = [
+        const phrases = [
             { id: 1, cat: "CONTACT", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
             { id: 2, cat: "MEETING", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
             { id: 3, cat: "REQUEST", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
             { id: 4, cat: "RESPONSE", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" },
             { id: 5, cat: "PHONE", jp: "お電話代わりました。", rd: "오뎅와 카와리마시타", mn: "전화 바꿨습니다" },
-            { id: 6, cat: "PROPOSAL", jp: "一点、ご提案がございます。", rd: "잇텐 고테이안가 고자이마스", mn: "한 가지 제안드릴 것이 있습니다" }
+            { id: 6, cat: "PROPOSAL", jp: "一点、ご提案がございます。", rd: "잇텐 고테이안가 고자이마스", mn: "한 가지 제안드릴 것이 있습니다" },
+            { id: 7, cat: "ATTITUDE", jp: "お力添えをお願いいたします。", rd: "오치카라조에오 오네가이 이타시마스", mn: "도움을 부탁드립니다" },
+            { id: 8, cat: "VISIT", jp: "お忙しい中、恐縮です。", rd: "오이소가시이 나카 쿄-슈쿠데스", mn: "바쁘신 와중에 죄송합니다" },
+            { id: 9, cat: "GREETING", jp: "今後ともよろしくお願いいたします。", rd: "콩고토모 요로시쿠 오네가이 이타시마스", mn: "앞으로도 잘 부탁드립니다" },
+            { id: 10, cat: "APOLOGY", jp: "誠に申し訳ございません。", rd: "마코토니 모-시와케 고자이마센", mn: "진심으로 사과드립니다" },
+            { id: 11, cat: "CONFIRM", jp: "念のため確認させてください。", rd: "넨노타메 카쿠닌 사세테쿠다사이", mn: "만약을 위해 확인 부탁드립니다" },
+            { id: 12, cat: "SCHEDULE", jp: "ご都合はいかがでしょうか。", rd: "고츠고-와 이카가데쇼-카", mn: "스케줄은 어떠신가요?" },
+            { id: 13, cat: "THANKS", jp: "大変助かりました。", rd: "타이헨 타스카리마시타", mn: "정말 큰 도움이 되었습니다" },
+            { id: 14, cat: "PHONE", jp: "折り返しお電話いたします。", rd: "오리카에시 오뎅와 이타시마스", mn: "다시 전화드리겠습니다" },
+            { id: 15, cat: "PROPOSAL", jp: "検討させていただきます。", rd: "켄토-사세테 이타다키마스", mn: "검토하도록 하겠습니다" },
+            { id: 16, cat: "MEETING", jp: "失礼ですが、お名前を伺えますか。", rd: "시츠레이데스가 오나마에오 우카가에마스카", mn: "실례지만 성함을 여쭤봐도 될까요?" }
         ];
+
+        // 🔊 TTS 함수
+        function speakJapanese(text) {
+            window.speechSynthesis.cancel(); // 이전 음성 중단
+            const msg = new SpeechSynthesisUtterance(text);
+            msg.lang = 'ja-JP';
+            msg.rate = 0.9; // 약간 천천히
+            window.speechSynthesis.speak(msg);
+        }
 
         function renderStudyMode() {
             const studyView = document.getElementById('study-view');
             studyView.innerHTML = '';
 
-            phrases.forEach(p => {
-                const block = document.createElement('div');
-                block.className = 'phrase-block';
+            for (let i = 0; i < phrases.length; i += 4) {
+                const section = document.createElement('div');
+                section.className = 'study-section';
                 
-                // 먼지 입자 (총 20개로 증량하여 더 화려하게)
-                let dustHTML = '<div class="dust-container">';
-                for(let i=0; i<20; i++) {
-                    const angle = (i / 20) * Math.PI * 2;
-                    const dist = 250 + Math.random() * 200; // 1.5배 이상 확장
-                    const dx = Math.cos(angle) * dist + 'px';
-                    const dy = (Math.sin(angle) * 100 + 50) + 'px'; 
-                    const size = Math.random() * 25 + 10 + 'px';
-                    dustHTML += `<div class="dust-particle" style="--dx:${dx}; --dy:${dy}; width:${size}; height:${size}; left:50%"></div>`;
-                }
-                dustHTML += '</div>';
+                [0, 1, 2, 3].forEach(offset => {
+                    const p = phrases[i + offset];
+                    if (!p) return;
+                    
+                    const block = document.createElement('div');
+                    block.className = `phrase-block delay-${offset}`;
+                    
+                    let dustHTML = '<div class="dust-container">';
+                    for(let j=0; j<8; j++) {
+                        const angle = (j / 8) * Math.PI * 2;
+                        const dx = Math.cos(angle) * 120 + 'px';
+                        const dy = Math.sin(angle) * 30 + 'px';
+                        dustHTML += `<div class="dust-particle" style="--dx:${dx}; --dy:${dy}; width:8px; height:8px; left:50%"></div>`;
+                    }
+                    dustHTML += '</div>';
 
-                block.innerHTML = `
-                    <div class="category">${p.cat}</div>
-                    <div class="japanese">${p.jp}</div>
-                    ${dustHTML}
-                    <div class="reading">${p.rd}</div>
-                    <div class="meaning">${p.mn}</div>
-                `;
-                studyView.appendChild(block);
-            });
+                    block.innerHTML = `
+                        <div class="card-inner" onclick="flipCard(this, '${p.jp.replace(/'/g, "\\'")}')">
+                            <div class="card-front">
+                                <div class="category">${p.cat}</div>
+                                <div class="meaning">${p.mn}</div>
+                                <div class="reading">${p.rd}</div>
+                                ${dustHTML}
+                            </div>
+                            <div class="card-back">
+                                <div class="japanese-back">${p.jp}</div>
+                            </div>
+                        </div>
+                    `;
+                    section.appendChild(block);
+                });
+                studyView.appendChild(section);
+            }
 
-            const studyObserver = new IntersectionObserver((entries) => {
+            const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.remove('active');
-                        void entry.target.offsetWidth; 
-                        entry.target.classList.add('active');
+                        entry.target.querySelectorAll('.phrase-block').forEach(b => {
+                            b.classList.remove('active', 'flipped');
+                            void b.offsetWidth;
+                            b.classList.add('active');
+                        });
                     }
                 });
-            }, { threshold: 0.8 });
+            }, { threshold: 0.4 });
 
-            document.querySelectorAll('.phrase-block').forEach(b => studyObserver.observe(b));
+            document.querySelectorAll('.study-section').forEach(s => observer.observe(s));
+        }
+
+        // 🔄 카드 뒤집기 및 읽기
+        function flipCard(cardInner, text) {
+            const block = cardInner.parentElement;
+            const isFlipped = block.classList.toggle('flipped');
+            if (isFlipped) {
+                speakJapanese(text);
+            }
         }
 
         window.onload = renderStudyMode;
