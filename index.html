@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese Pro - SNAP Edition</title>
+    <title>Business Japanese Pro - RIP Edition</title>
     <style>
         /* --- 공통 스타일 (Apple Reset) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -21,7 +21,7 @@
         }
         .nav-list { display: flex; justify-content: space-around; align-items: center; list-style: none; height: 100%; padding: 0 10px; }
         .nav-link { color: #f5f5f7; font-size: 14px; opacity: 0.5; text-decoration: none; cursor: pointer; transition: 0.3s; }
-        .nav-link.active { opacity: 1; font-weight: 600; color: #a29bfe; /* Snap Purple */ }
+        .nav-link.active { opacity: 1; font-weight: 600; color: #ff9f0a; }
         .nav-mode { 
             color: #fff; opacity: 0.5; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.3); 
             padding: 4px 12px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.3s;
@@ -35,46 +35,46 @@
         .hero-section p { color: #86868b; font-size: 15px; margin-top: 8px; }
 
         /* --- [1] 리스트 모드 스타일 --- */
-        .list-container { margin-top: 20px; border-top: 0.5px solid #2c2c2e; display: none; position: relative;}
-        
+        .list-container { margin-top: 20px; border-top: 0.5px solid #2c2c2e; display: none; }
         .list-item-wrapper { 
-            position: relative; background-color: #ff3b30; overflow: hidden; border-bottom: 0.5px solid #2c2c2e; 
-            transition: background-color 0.3s;
+            position: relative; background-color: #ff9f0a; overflow: visible; border-bottom: 0.5px solid #2c2c2e; 
         }
-
-        /* 스냅 애니메이션 중에는 행을 숨김 */
-        .list-item-wrapper.snapping {
-            visibility: hidden;
-            pointer-events: none;
-        }
-
         .list-item-content {
             position: relative; width: 100%; padding: 18px 20px; background-color: #000; z-index: 2;
             cursor: grab; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            /* html2canvas가 숨겨진 요소를 캡처할 수 있도록 visibility는 유지 */
         }
-        
-        .category { font-size: 10px; color: #2997ff; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
-        .japanese { font-size: 18px; font-weight: 500; color: #fff; word-break: keep-all;}
+        .category { font-size: 10px; color: #ff9f0a; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .japanese { font-size: 18px; font-weight: 500; color: #fff; }
         .reading { font-size: 13px; color: #86868b; }
         .meaning { font-size: 16px; color: #f5f5f7; margin-top: 4px; }
         
         .delete-label {
             position: absolute; right: 0; top: 0; height: 100%; width: 80px;
-            background-color: #ff3b30; color: white; display: flex; align-items: center; justify-content: center;
+            background-color: #ff9f0a; color: white; display: flex; align-items: center; justify-content: center;
             font-size: 15px; font-weight: 600; z-index: 1; cursor: pointer;
         }
 
-        /* Canvas Container for Particles */
-        #particle-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 100;
+        /* 🗞️ 종이 찢기 효과용 레이어 */
+        .rip-part {
+            position: absolute; top: 0; width: 50%; height: 100%;
+            background-color: #000; z-index: 10;
+            overflow: hidden; pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.5, 0, 0.7, 0.3);
         }
+        .rip-left {
+            left: 0;
+            clip-path: polygon(0 0, 100% 0, 85% 25%, 100% 50%, 80% 75%, 100% 100%, 0 100%);
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        .rip-right {
+            right: 0;
+            clip-path: polygon(15% 25%, 0 0, 100% 0, 100% 100%, 0 100%, 20% 75%, 0 50%);
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 찢어지는 애니메이션 상태 */
+        .ripping .rip-left { transform: translate(-30px, 50px) rotate(-15deg); opacity: 0; }
+        .ripping .rip-right { transform: translate(30px, 50px) rotate(15deg); opacity: 0; }
 
         /* --- [2] 학습 모드 스타일 --- */
         .study-container { display: none; padding-bottom: 100px; }
@@ -104,13 +104,10 @@
     <div class="container">
         <section class="hero-section" id="hero">
             <h1 id="hero-title">Phrases</h1>
-            <p id="hero-desc">암기한 문장을 먼지로 만들어버리세요 (SNAP).</p>
+            <p id="hero-desc">마스터한 문장은 가차없이 찢어버리세요.</p>
         </section>
 
-        <div id="list-view" class="list-container">
-            <div id="particle-container"></div>
-        </div>
-
+        <div id="list-view" class="list-container"></div>
         <div id="study-view" class="study-container"></div>
     </div>
 
@@ -118,13 +115,11 @@
         <p>© 2026 Business Japanese Professional.</p>
     </footer>
 
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
     <script>
         let phrases = [
             { id: 1, cat: "인사 및 연락", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
             { id: 2, cat: "인사 및 연락", jp: "お疲れ様でございます。", rd: "오츠카레사마데 고자이마스", mn: "수고 많으십니다" },
-            { id: 3, cat: "방문 및 회의", jp: "名刺을 頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
+            { id: 3, cat: "방문 및 회의", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
             { id: 4, cat: "요청 및 문의", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
             { id: 5, cat: "승낙 및 거절", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" },
             { id: 6, cat: "사과 및 감사", jp: "誠に申し訳ございません。", rd: "마코토니 모-시와케 고자이마센", mn: "진심으로 사과드립니다" }
@@ -133,14 +128,11 @@
         let currentMode = 'all';
         let activeSwipeContent = null;
         let observer = null;
-        let isSnapping = false; // 애니메이션 중 중복 동작 방지
+        let isProcessing = false;
 
-        // --- 모드 전환 함수 ---
         function enableStudyMode() {
-            if(isSnapping) return;
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             document.getElementById('btn-study').classList.add('active');
-            
             document.getElementById('list-view').style.display = 'none';
             document.getElementById('study-view').style.display = 'block';
             document.getElementById('hero-title').innerText = "Study Mode";
@@ -149,39 +141,35 @@
         }
 
         function filterList(type, element) {
-            if(isSnapping) return;
             document.getElementById('btn-study').classList.remove('active');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             element.classList.add('active');
-
             document.getElementById('study-view').style.display = 'none';
             document.getElementById('list-view').style.display = 'block';
             document.getElementById('hero-title').innerText = type === 'all' ? "Phrases" : (type === 'jp' ? "日本語" : "한국어");
             renderList(type);
         }
 
-        // --- [1] 리스트 렌더링 & 인터랙션 ---
         function renderList(type) {
             currentMode = type;
             const listView = document.getElementById('list-view');
-            // 캔버스 컨테이너는 유지하고 리스트 아이템만 초기화
-            const items = listView.querySelectorAll('.list-item-wrapper');
-            items.forEach(item => item.remove());
-
+            listView.innerHTML = '';
             phrases.forEach(p => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'list-item-wrapper';
                 wrapper.setAttribute('data-id', p.id);
-                let html = `<div class="list-item-content"><div class="category">${p.cat}</div>`;
-                if (type === 'all' || type === 'jp') {
-                    html += `<div class="japanese">${p.jp}</div>`;
-                    if(type !== 'ko') html += `<div class="reading">${p.rd}</div>`;
-                }
-                if (type === 'all' || type === 'ko') {
-                    html += `<div class="meaning">${p.mn}</div>`;
-                }
-                html += `</div><div class="delete-label" onclick="initSnap(${p.id})">SNAP</div>`;
-                wrapper.innerHTML = html;
+                
+                let innerHtml = `
+                    <div class="list-item-content">
+                        <div class="category">${p.cat}</div>
+                        ${(type === 'all' || type === 'jp') ? `<div class="japanese">${p.jp}</div>` : ''}
+                        ${(type === 'all' || type === 'jp') ? `<div class="reading">${p.rd}</div>` : ''}
+                        ${(type === 'all' || type === 'ko') ? `<div class="meaning">${p.mn}</div>` : ''}
+                    </div>
+                    <div class="delete-label" onclick="initRip(${p.id})">찢기</div>
+                `;
+                
+                wrapper.innerHTML = innerHtml;
                 setupSwipe(wrapper, p.id);
                 listView.appendChild(wrapper);
             });
@@ -190,10 +178,10 @@
         function setupSwipe(wrapper, id) {
             const content = wrapper.querySelector('.list-item-content');
             let startX = 0, isDragging = false, currentDiff = 0;
-            const qdThreshold = window.innerWidth * 0.65; // 65% 이상 밀면 스냅
+            const qdThreshold = window.innerWidth * 0.65;
 
             const start = (e) => {
-                if(isSnapping || wrapper.classList.contains('snapping')) return;
+                if (isProcessing) return;
                 if (activeSwipeContent && activeSwipeContent !== content) activeSwipeContent.style.transform = 'translateX(0px)';
                 isDragging = true;
                 startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
@@ -204,8 +192,7 @@
                 currentDiff = startX - (e.type.includes('mouse') ? e.pageX : e.touches[0].clientX);
                 if (currentDiff > 0) {
                     content.style.transform = `translateX(-${currentDiff}px)`;
-                    // 배경색 피드백 (타노스 퍼플)
-                    wrapper.style.backgroundColor = currentDiff > qdThreshold ? "#a29bfe" : "#ff3b30"; 
+                    wrapper.style.backgroundColor = currentDiff > qdThreshold ? "#e67e22" : "#ff9f0a"; 
                 }
             };
             const end = () => {
@@ -213,7 +200,7 @@
                 isDragging = false;
                 content.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
                 if (currentDiff > qdThreshold) {
-                    initSnap(id);
+                    initRip(id);
                 } else if (currentDiff > 70) {
                     content.style.transform = 'translateX(-80px)';
                     activeSwipeContent = content;
@@ -230,169 +217,48 @@
             content.addEventListener('touchend', end);
         }
 
-        // --- 🌪️ The Thanos Snap Effect (Particle Physics) ---
-
-        // 입자 객체 정의
-        class Particle {
-            constructor(x, y, color, canvasWidth, canvasHeight) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
-                // 초기 속도: 사방으로 퍼지되 위쪽/왼쪽으로 약간 더 강하게
-                this.speedX = (Math.random() - 0.7) * 8; 
-                this.speedY = (Math.random() - 0.6) * 12; 
-                // 회전
-                this.angle = Math.random() * Math.PI * 2;
-                this.spin = (Math.random() - 0.5) * 0.4;
-                // 중력 및 마찰
-                this.gravity = 0.15;
-                this.friction = 0.96;
-                // 수명 및 크기 감소
-                this.size = Math.random() * 2.5 + 0.5;
-                this.death = 80 + Math.random() * 40; // 수명 프레임 수
-                this.life = 0;
-                this.opacity = 1;
-                this.canvasWidth = canvasWidth;
-                this.canvasHeight = canvasHeight;
-            }
-
-            update() {
-                // 물리 법칙 적용
-                this.speedY += this.gravity;
-                this.speedX *= this.friction;
-                this.speedY *= this.friction;
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.angle += this.spin;
-                
-                // 수명 관리 및 크기/투명도 감소
-                this.life++;
-                if (this.life >= this.death) {
-                    this.size *= 0.9;
-                    this.opacity *= 0.8;
-                }
-            }
-
-            draw(ctx) {
-                if (this.opacity < 0.05 || this.size < 0.1) return false;
-
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle);
-                ctx.fillStyle = `rgba(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.opacity})`;
-                
-                // 사각형 입자 그리기
-                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
-                
-                ctx.restore();
-                return true;
-            }
-        }
-
-        // 스냅 효과 초기화
-        function initSnap(id) {
-            if(isSnapping) return;
+        // --- 🗞️ RIP EFFECT LOGIC ---
+        function initRip(id) {
+            if (isProcessing) return;
             const wrapper = document.querySelector(`.list-item-wrapper[data-id="${id}"]`);
             if(!wrapper) return;
 
+            isProcessing = true;
             const content = wrapper.querySelector('.list-item-content');
-            isSnapping = true;
-            activeSwipeContent = null;
+            const cloneHtml = content.innerHTML;
 
-            // html2canvas로 행 캡처
-            html2canvas(content, {
-                backgroundColor: null,
-                logging: false,
-                scale: 1, // 퍼포먼스를 위해 1배율
-                useCORS: true
-            }).then(canvas => {
-                // 캡처 완료 후 원본 행 숨기기
-                wrapper.classList.add('snapping');
-                wrapper.style.backgroundColor = 'transparent';
+            // 1. 원본 내용 숨기고 찢어질 두 파트 생성
+            content.style.visibility = 'hidden';
+            wrapper.style.backgroundColor = 'transparent';
+            
+            const leftPart = document.createElement('div');
+            leftPart.className = 'rip-part rip-left';
+            leftPart.innerHTML = `<div style="width:200%; padding: 18px 20px;">${cloneHtml}</div>`;
+            
+            const rightPart = document.createElement('div');
+            rightPart.className = 'rip-part rip-right';
+            rightPart.innerHTML = `<div style="width:200%; margin-left:-100%; padding: 18px 20px;">${cloneHtml}</div>`;
+            
+            wrapper.appendChild(leftPart);
+            wrapper.appendChild(rightPart);
 
-                // 캔버스 설정
-                const ctx = canvas.getContext('2d');
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                const pixels = imageData.data;
-
-                // 입자 생성 컨테이너
-                const container = document.getElementById('particle-container');
-                const wrapperRect = wrapper.getBoundingClientRect();
-                const containerRect = document.getElementById('list-view').getBoundingClientRect();
-
-                // 애니메이션용 캔버스 생성
-                const animationCanvas = document.createElement('canvas');
-                animationCanvas.width = canvas.width * 2; // 확산을 고려해 넉넉하게
-                animationCanvas.height = canvas.height * 3;
-                animationCanvas.style.position = 'absolute';
-                // 컨테이너 내에서 원본 행의 위치에 맞춤
-                animationCanvas.style.left = (wrapperRect.left - containerRect.left - canvas.width / 2) + 'px';
-                animationCanvas.style.top = (wrapperRect.top - containerRect.top - canvas.height) + 'px';
-                container.appendChild(animationCanvas);
-
-                const actx = animationCanvas.getContext('2d');
-                const particles = [];
-
-                // 픽셀 분석 및 입자 생성 (퍼포먼스를 위해 4x4 그리드로 샘플링)
-                const samplingRate = 4;
-                for (let y = 0; y < canvas.height; y += samplingRate) {
-                    for (let x = 0; x < canvas.width; x += samplingRate) {
-                        const index = (y * canvas.width + x) * 4;
-                        const alpha = pixels[index + 3];
-
-                        if (alpha > 128) { // 투명하지 않은 픽셀만 입자로 변환
-                            const color = {
-                                r: pixels[index],
-                                g: pixels[index + 1],
-                                b: pixels[index + 2]
-                            };
-                            // 입자 시작 위치 (애니메이션 캔버스 중앙 하단부)
-                            particles.push(new Particle(
-                                x + canvas.width / 2, 
-                                y + canvas.height, 
-                                color, 
-                                animationCanvas.width, 
-                                animationCanvas.height
-                            ));
-                        }
-                    }
-                }
-
-                // 애니메이션 루프
-                function animate() {
-                    actx.clearRect(0, 0, animationCanvas.width, animationCanvas.height);
-                    
-                    let aliveCount = 0;
-                    for (let i = 0; i < particles.length; i++) {
-                        particles[i].update();
-                        if (particles[i].draw(actx)) {
-                            aliveCount++;
-                        }
-                    }
-
-                    if (aliveCount > 0) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        // 애니메이션 종료 후 정리 및 실제 데이터 삭제
-                        animationCanvas.remove();
-                        finishDelete(id);
-                    }
-                }
-
-                // 애니메이션 시작
-                requestAnimationFrame(animate);
+            // 2. 애니메이션 실행
+            requestAnimationFrame(() => {
+                wrapper.classList.add('ripping');
+                // 햅틱 진동 (지원 기기)
+                if (navigator.vibrate) navigator.vibrate([50, 10, 50]);
             });
+
+            // 3. 데이터 정리
+            setTimeout(() => {
+                phrases = phrases.filter(p => p.id !== id);
+                if (document.getElementById('study-view').style.display === 'block') renderStudyMode();
+                else renderList(currentMode);
+                isProcessing = false;
+                activeSwipeContent = null;
+            }, 650);
         }
 
-        function finishDelete(id) {
-            phrases = phrases.filter(p => p.id !== id);
-            isSnapping = false;
-            // 현재 모드에 맞춰 리스트 재렌더링
-            if (document.getElementById('study-view').style.display === 'block') renderStudyMode();
-            else renderList(currentMode);
-        }
-
-        // --- [2] 학습 모드 렌더링 & 관찰자 ---
         function renderStudyMode() {
             const studyView = document.getElementById('study-view');
             studyView.innerHTML = '';
@@ -410,18 +276,16 @@
                 studyView.appendChild(block);
             });
 
-            const options = { threshold: 0.6 };
             observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) entry.target.classList.add('active');
                     else entry.target.classList.remove('active');
                 });
-            }, options);
+            }, { threshold: 0.6 });
 
             document.querySelectorAll('.phrase-block').forEach(b => observer.observe(b));
         }
 
-        // 초기 실행
         filterList('all', document.getElementById('link-all'));
     </script>
 </body>
