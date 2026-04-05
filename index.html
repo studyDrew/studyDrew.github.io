@@ -3,266 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese Pro - ULTRA FAST</title>
+    <title>Business Japanese - ALL IMPACT EDITION</title>
     <style>
-        /* --- 공통 스타일 --- */
+        /* --- 공통 및 네비게이션 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            background-color: #000; color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", sans-serif;
-            line-height: 1.5; user-select: none; overflow-x: hidden;
-        }
+        body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; overflow-x: hidden; }
+        .apple-nav { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); z-index: 9999; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+        .nav-list { display: flex; justify-content: space-around; align-items: center; list-style: none; height: 100%; }
+        .nav-mode { color: #fff; opacity: 1; background-color: #6200ee; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
 
-        /* --- 네비게이션 --- */
-        .apple-nav {
-            position: fixed; top: 0; width: 100%; height: 60px;
-            background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);
-            z-index: 9999; border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-        }
-        .nav-list { display: flex; justify-content: space-around; align-items: center; list-style: none; height: 100%; padding: 0 10px; }
-        .nav-link { color: #f5f5f7; font-size: 14px; opacity: 0.5; text-decoration: none; cursor: pointer; transition: 0.3s; }
-        .nav-link.active { opacity: 1; font-weight: 600; color: #6200ee; text-shadow: 0 0 8px #6200ee; }
-        .nav-mode { 
-            color: #fff; opacity: 0.5; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.3); 
-            padding: 4px 12px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.2s;
-        }
-        .nav-mode.active { opacity: 1; background-color: #6200ee; color: #fff; border-color: #6200ee; }
+        /* --- ⚡ 학습모드 (전체 요소 3배 크기 + 동시 낙하 효과) --- */
+        .study-container { display: block; height: calc(100vh - 60px); overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; margin-top: 60px; }
+        .study-container::-webkit-scrollbar { display: none; }
 
-        /* --- 컨테이너 --- */
-        .container { padding-top: 60px; max-width: 800px; margin: 0 auto; min-height: 100vh; }
-        .hero-section { padding: 40px 20px 20px; text-align: center; }
-        .hero-section h1 { font-size: 32px; font-weight: 700; letter-spacing: -1px; }
-        .hero-section p { color: #86868b; font-size: 15px; margin-top: 8px; }
-
-        /* --- 리스트 모드 스타일 --- */
-        .list-container { margin-top: 20px; border-top: 0.5px solid #2c2c2e; display: none; }
-        .list-item-wrapper { 
-            position: relative; background: #6200ee; overflow: hidden; border-bottom: 0.5px solid #2c2c2e; 
-        }
-        .list-item-content {
-            position: relative; width: 100%; padding: 18px 20px; background-color: #000; z-index: 2;
-            cursor: grab; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-            transform-style: preserve-3d;
-        }
-        .category { font-size: 10px; color: #03dac6; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
-        .japanese { font-size: 18px; font-weight: 500; color: #fff; }
-        .reading { font-size: 13px; color: #86868b; }
-        .meaning { font-size: 16px; color: #f5f5f7; margin-top: 4px; }
-        
-        .delete-label {
-            position: absolute; right: 0; top: 0; height: 100%; width: 80px;
-            background: transparent; color: #fff; display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 900; z-index: 1; cursor: pointer;
-        }
-
-        /* 🌀 울트라 패스트 로컬 싱귤래리티 (0.2s) */
-        .singularity-active {
-            pointer-events: none !important;
-            z-index: 100;
-            animation: 
-                singularityShrinkWarp 0.2s ease-in forwards, 
-                glitchEffect 0.05s infinite, 
-                localShake 0.05s infinite;
-        }
-
-        .singularity-active * {
-            animation: textShrink 0.2s ease-in forwards;
-        }
-
-        @keyframes localShake {
-            0% { transform: translate(3px, 2px) rotate(1deg); }
-            100% { transform: translate(-3px, -2px) rotate(-1deg); }
-        }
-
-        @keyframes singularityShrinkWarp {
-            0% { transform: scale(1) rotate(0deg); filter: hue-rotate(0deg) blur(0); opacity: 1; }
-            100% { transform: scale(0) rotate(360deg); filter: hue-rotate(180deg) blur(30px); opacity: 0; }
-        }
-
-        @keyframes textShrink {
-            0% { transform: scale(1); }
-            100% { transform: scale(0.1); }
-        }
-
-        @keyframes glitchEffect {
-            0% { text-shadow: 4px 0 #ff00c1, -4px 0 #00fff9; }
-            50% { filter: contrast(2) brightness(2); }
-            100% { text-shadow: -4px 0 #ff00c1, 4px 0 #00fff9; }
-        }
-
-        /* --- 학습 모드 스타일 --- */
-        .study-container { display: none; padding-bottom: 100px; }
         .phrase-block {
-            height: 70vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; transition: 0.5s; opacity: 0.1; transform: scale(0.8);
+            height: calc(100vh - 60px); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 0 20px; scroll-snap-align: start; position: relative;
+            --study-scale: 3.0; 
         }
-        .phrase-block.active { opacity: 1; transform: scale(1.1); }
-        
-        footer { padding: 60px 20px; text-align: center; color: #424245; font-size: 12px; }
+
+        /* [핵심] 모든 문장 요소에 낙하 애니메이션 공통 적용 */
+        .category, .japanese, .reading, .meaning {
+            opacity: 0; 
+            transform: translateY(-500px) scale(2);
+            word-break: keep-all;
+            transition: none;
+        }
+
+        /* 활성화 시 모든 요소 동시 낙하 */
+        .phrase-block.active .category,
+        .phrase-block.active .japanese,
+        .phrase-block.active .reading,
+        .phrase-block.active .meaning {
+            animation: jobsDropAll 0.5s cubic-bezier(0.2, 0, 0.4, 1.4) forwards;
+        }
+
+        @keyframes jobsDropAll {
+            0% { opacity: 0; transform: translateY(-500px) scale(2); }
+            60% { opacity: 1; transform: translateY(0) scale(1); }
+            80% { transform: translateY(-15px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* 폰트 스타일 및 3배 크기 적용 */
+        .category { font-size: 16px; color: #6200ee; margin-bottom: 20px; letter-spacing: 5px; font-weight: 900; }
+        .japanese { font-size: calc(1.2rem * var(--study-scale)); font-weight: 800; line-height: 1.1; margin-bottom: 10px; }
+        .reading { font-size: calc(0.5rem * var(--study-scale)); color: #aaa; margin-bottom: 30px; }
+        .meaning { 
+            font-size: calc(0.9rem * var(--study-scale)); color: #03dac6; 
+            font-weight: 700; border-top: 3px solid #333; padding-top: 20px; 
+        }
+
+        /* [먼지 효과] 1.5배 넓게, 1.3배 진하게 */
+        .dust-container { position: absolute; width: 100%; height: 20px; top: 55%; pointer-events: none; }
+        .dust-particle {
+            position: absolute; left: 50%; 
+            background: rgba(220, 220, 220, 0.7); /* 진한 농도 */
+            border-radius: 50%; filter: blur(8px); opacity: 0;
+        }
+
+        .phrase-block.active .dust-particle {
+            animation: dustBurstImpact 1s ease-out forwards;
+            animation-delay: 0.35s;
+        }
+
+        @keyframes dustBurstImpact {
+            0% { opacity: 0; transform: translate(0, 0) scale(1); }
+            20% { opacity: 0.9; }
+            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(6); }
+        }
+
+        /* 화면 흔들림(강력한 Impact) */
+        .phrase-block.active { animation: superShake 0.15s 0.35s 2; }
+        @keyframes superShake { 0% { transform: translateY(0); } 50% { transform: translateY(8px); } 100% { transform: translateY(0); } }
+
     </style>
 </head>
 <body>
 
     <nav class="apple-nav">
         <ul class="nav-list">
-            <li><span id="btn-study" class="nav-mode" onclick="enableStudyMode()">학습모드</span></li>
-            <li><a id="link-all" class="nav-link active" onclick="filterList('all', this)">전부</a></li>
-            <li><a class="nav-link" onclick="filterList('jp', this)">일본어</a></li>
-            <li><a class="nav-link" onclick="filterList('ko', this)">한국어</a></li>
+            <li><span class="nav-mode">학습모드 (IMPACT)</span></li>
         </ul>
     </nav>
 
     <div class="container">
-        <section class="hero-section">
-            <h1 id="hero-title">Phrases</h1>
-            <p>초고속 소거 모드가 활성화되었습니다.</p>
-        </section>
-
-        <div id="list-view" class="list-container"></div>
         <div id="study-view" class="study-container"></div>
     </div>
 
-    <footer><p>© 2026 Business Japanese Professional.</p></footer>
-
     <script>
         let phrases = [
-            { id: 1, cat: "인사 및 연락", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
-            { id: 2, cat: "인사 및 연락", jp: "お疲れ様でございます。", rd: "오츠카레사마데 고자이마스", mn: "수고 많으십니다" },
-            { id: 3, cat: "방문 및 회의", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
-            { id: 4, cat: "요청 및 문의", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
-            { id: 5, cat: "승낙 및 거절", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" },
-            { id: 6, cat: "사과 및 감사", jp: "誠に申し訳ございません。", rd: "마코토니 모-시와케 고자이마센", mn: "진심으로 사과드립니다" }
+            { id: 1, cat: "CONTACT", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
+            { id: 2, cat: "MEETING", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
+            { id: 3, cat: "REQUEST", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
+            { id: 4, cat: "RESPONSE", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" },
+            { id: 5, cat: "PHONE", jp: "お電話代わりました。", rd: "오뎅와 카와리마시타", mn: "전화 바꿨습니다" },
+            { id: 6, cat: "PROPOSAL", jp: "一点、ご提案がございます。", rd: "잇텐 고테이안가 고자이마스", mn: "한 가지 제안드릴 것이 있습니다" }
         ];
-
-        let currentMode = 'all';
-        let isWarping = false;
-        let activeSwipeContent = null;
-
-        function enableStudyMode() {
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById('btn-study').classList.add('active');
-            document.getElementById('list-view').style.display = 'none';
-            document.getElementById('study-view').style.display = 'block';
-            document.getElementById('hero-title').innerText = "Study Mode";
-            renderStudyMode();
-        }
-
-        function filterList(type, element) {
-            document.getElementById('btn-study').classList.remove('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            element.classList.add('active');
-            document.getElementById('study-view').style.display = 'none';
-            document.getElementById('list-view').style.display = 'block';
-            document.getElementById('hero-title').innerText = "Phrases";
-            renderList(type);
-        }
-
-        function renderList(type) {
-            currentMode = type;
-            const listView = document.getElementById('list-view');
-            listView.innerHTML = '';
-            phrases.forEach(p => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'list-item-wrapper';
-                wrapper.setAttribute('data-id', p.id);
-                wrapper.innerHTML = `
-                    <div class="list-item-content">
-                        <div class="category">${p.cat}</div>
-                        ${(type==='all' || type==='jp') ? `<div class="japanese">${p.jp}</div><div class="reading">${p.rd}</div>` : ''}
-                        ${(type==='all' || type==='ko') ? `<div class="meaning">${p.mn}</div>` : ''}
-                    </div>
-                    <div class="delete-label" onclick="initSingularity(${p.id})">WIPE</div>
-                `;
-                setupSwipe(wrapper, p.id);
-                listView.appendChild(wrapper);
-            });
-        }
-
-        function setupSwipe(wrapper, id) {
-            const content = wrapper.querySelector('.list-item-content');
-            let startX = 0, currentDiff = 0, isDragging = false;
-            const qdThreshold = window.innerWidth * 0.55;
-
-            const start = (e) => {
-                if (isWarping) return;
-                if (activeSwipeContent && activeSwipeContent !== content) {
-                    activeSwipeContent.style.transform = 'translateX(0px)';
-                }
-                startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-                content.style.transition = 'none';
-                isDragging = true;
-            };
-
-            const move = (e) => {
-                if (!isDragging) return;
-                const x = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-                currentDiff = startX - x;
-                if (currentDiff > 0) {
-                    content.style.transform = `translateX(-${currentDiff}px)`;
-                }
-            };
-
-            const end = () => {
-                if (!isDragging) return;
-                isDragging = false;
-                content.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                
-                if (currentDiff > qdThreshold) {
-                    initSingularity(id);
-                } else if (currentDiff > 60) {
-                    content.style.transform = 'translateX(-80px)';
-                    activeSwipeContent = content;
-                } else {
-                    content.style.transform = 'translateX(0px)';
-                    activeSwipeContent = null;
-                }
-            };
-
-            content.addEventListener('mousedown', start);
-            window.addEventListener('mousemove', move);
-            window.addEventListener('mouseup', end);
-            content.addEventListener('touchstart', start);
-            content.addEventListener('touchmove', move);
-            content.addEventListener('touchend', end);
-        }
-
-        function initSingularity(id) {
-            if (isWarping) return;
-            const wrapper = document.querySelector(`.list-item-wrapper[data-id="${id}"]`);
-            if(!wrapper) return;
-            const content = wrapper.querySelector('.list-item-content');
-
-            isWarping = true;
-            content.classList.add('singularity-active');
-            
-            if (navigator.vibrate) navigator.vibrate([10, 5, 15]);
-
-            // 초고속 삭제 로직 (0.22s 대기 후 리스트 갱신)
-            setTimeout(() => {
-                phrases = phrases.filter(p => p.id !== id);
-                if (document.getElementById('study-view').style.display === 'block') renderStudyMode();
-                else renderList(currentMode);
-                isWarping = false;
-                activeSwipeContent = null;
-            }, 220); 
-        }
 
         function renderStudyMode() {
             const studyView = document.getElementById('study-view');
             studyView.innerHTML = '';
+
             phrases.forEach(p => {
                 const block = document.createElement('div');
                 block.className = 'phrase-block';
-                block.innerHTML = `<div class="japanese">${p.jp}</div><div class="meaning">${p.mn}</div>`;
+                
+                // 먼지 입자 (총 20개로 증량하여 더 화려하게)
+                let dustHTML = '<div class="dust-container">';
+                for(let i=0; i<20; i++) {
+                    const angle = (i / 20) * Math.PI * 2;
+                    const dist = 250 + Math.random() * 200; // 1.5배 이상 확장
+                    const dx = Math.cos(angle) * dist + 'px';
+                    const dy = (Math.sin(angle) * 100 + 50) + 'px'; 
+                    const size = Math.random() * 25 + 10 + 'px';
+                    dustHTML += `<div class="dust-particle" style="--dx:${dx}; --dy:${dy}; width:${size}; height:${size}; left:50%"></div>`;
+                }
+                dustHTML += '</div>';
+
+                block.innerHTML = `
+                    <div class="category">${p.cat}</div>
+                    <div class="japanese">${p.jp}</div>
+                    ${dustHTML}
+                    <div class="reading">${p.rd}</div>
+                    <div class="meaning">${p.mn}</div>
+                `;
                 studyView.appendChild(block);
             });
-            const obs = new IntersectionObserver((es) => {
-                es.forEach(e => e.isIntersecting ? e.target.classList.add('active') : e.target.classList.remove('active'));
-            }, { threshold: 0.6 });
-            document.querySelectorAll('.phrase-block').forEach(b => obs.observe(b));
+
+            const studyObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.remove('active');
+                        void entry.target.offsetWidth; 
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.8 });
+
+            document.querySelectorAll('.phrase-block').forEach(b => studyObserver.observe(b));
         }
 
-        filterList('all', document.getElementById('link-all'));
+        window.onload = renderStudyMode;
     </script>
 </body>
 </html>
