@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese Pro - QUANTUM Edition</title>
+    <title>Business Japanese Pro - SUPERNOVA</title>
     <style>
         /* --- 공통 스타일 (Apple Reset) --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -11,7 +11,6 @@
             background-color: #000; color: #fff;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", sans-serif;
             line-height: 1.5; user-select: none; overflow-x: hidden;
-            perspective: 1500px; /* 3D 효과를 위한 원근감 설정 */
         }
 
         /* --- 네비게이션 --- */
@@ -22,49 +21,59 @@
         }
         .nav-list { display: flex; justify-content: space-around; align-items: center; list-style: none; height: 100%; padding: 0 10px; }
         .nav-link { color: #f5f5f7; font-size: 14px; opacity: 0.5; text-decoration: none; cursor: pointer; transition: 0.3s; }
-        .nav-link.active { opacity: 1; font-weight: 600; color: #00ffcc; /* Quantum Neon */ }
+        .nav-link.active { opacity: 1; font-weight: 600; color: #fff; text-shadow: 0 0 10px #fff; }
         .nav-mode { 
             color: #fff; opacity: 0.5; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.3); 
             padding: 4px 12px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.3s;
         }
-        .nav-mode.active { opacity: 1; background-color: #00ffcc; color: #000; border-color: #00ffcc; }
+        .nav-mode.active { opacity: 1; background-color: #fff; color: #000; box-shadow: 0 0 15px #fff; }
 
         /* --- 컨테이너 --- */
         .container { padding-top: 60px; max-width: 800px; margin: 0 auto; min-height: 100vh; }
         .hero-section { padding: 40px 20px 20px; text-align: center; }
-        .hero-section h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; text-shadow: 0 0 20px rgba(0, 255, 204, 0.3); }
+        .hero-section h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.5px; }
         .hero-section p { color: #86868b; font-size: 15px; margin-top: 8px; }
 
         /* --- [1] 리스트 모드 스타일 --- */
         .list-container { margin-top: 20px; border-top: 0.5px solid #2c2c2e; display: none; }
         .list-item-wrapper { 
-            position: relative; background-color: #00ffcc; overflow: visible; border-bottom: 0.5px solid #2c2c2e; 
+            position: relative; background-color: #fff; overflow: visible; border-bottom: 0.5px solid #2c2c2e; 
         }
         .list-item-content {
             position: relative; width: 100%; padding: 18px 20px; background-color: #000; z-index: 2;
             cursor: grab; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            transform-style: preserve-3d;
         }
-        .category { font-size: 10px; color: #00ffcc; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .category { font-size: 10px; color: #fff; font-weight: 700; opacity: 0.7; letter-spacing: 1px; margin-bottom: 4px; }
         .japanese { font-size: 18px; font-weight: 500; color: #fff; }
         .reading { font-size: 13px; color: #86868b; }
         .meaning { font-size: 16px; color: #f5f5f7; margin-top: 4px; }
         
         .delete-label {
             position: absolute; right: 0; top: 0; height: 100%; width: 80px;
-            background-color: #00ffcc; color: black; display: flex; align-items: center; justify-content: center;
-            font-size: 14px; font-weight: 800; z-index: 1; cursor: pointer;
+            background-color: #fff; color: #000; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800; z-index: 1; cursor: pointer;
         }
 
-        /* 양자 붕괴 진행 중 원본 숨김 */
-        .decaying { visibility: hidden !important; pointer-events: none !important; }
+        /* 🎇 초신성 폭발 애니메이션 레이어 */
+        .supernova-flash {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #fff; z-index: 10000; opacity: 0; pointer-events: none;
+        }
 
-        /* ⚛️ 큐브 파편 스타일 */
-        .quantum-cube {
-            position: fixed; pointer-events: none; z-index: 10000;
-            background-color: #00ffcc;
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
-            transform-style: preserve-3d;
+        .exploding {
+            animation: implode 0.4s cubic-bezier(0.6, 0, 0.4, 1) forwards;
+            pointer-events: none;
+        }
+
+        @keyframes implode {
+            0% { transform: scale(1); filter: brightness(1) blur(0); }
+            50% { transform: scale(1.1); filter: brightness(2); }
+            100% { transform: scale(0); filter: brightness(5) blur(10px); }
+        }
+
+        .particle {
+            position: fixed; pointer-events: none; z-index: 9999;
+            background: #fff; border-radius: 50%; box-shadow: 0 0 10px #fff;
         }
 
         /* --- [2] 학습 모드 스타일 --- */
@@ -83,6 +92,8 @@
 </head>
 <body>
 
+    <div id="flash-overlay" class="supernova-flash"></div>
+
     <nav class="apple-nav">
         <ul class="nav-list">
             <li><span id="btn-study" class="nav-mode" onclick="enableStudyMode()">학습모드</span></li>
@@ -95,7 +106,7 @@
     <div class="container">
         <section class="hero-section" id="hero">
             <h1 id="hero-title">Phrases</h1>
-            <p id="hero-desc">암기한 문장을 양자 단위(Quantum)로 분해하세요.</p>
+            <p id="hero-desc">완벽히 숙달한 문장을 폭발(SUPERNOVA)시키세요.</p>
         </section>
 
         <div id="list-view" class="list-container"></div>
@@ -105,8 +116,6 @@
     <footer id="footer">
         <p>© 2026 Business Japanese Professional.</p>
     </footer>
-
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
     <script>
         let phrases = [
@@ -121,7 +130,7 @@
         let currentMode = 'all';
         let activeSwipeContent = null;
         let observer = null;
-        let isDecaying = false;
+        let isExploding = false;
 
         function enableStudyMode() {
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
@@ -159,7 +168,7 @@
                 if (type === 'all' || type === 'ko') {
                     html += `<div class="meaning">${p.mn}</div>`;
                 }
-                html += `</div><div class="delete-label" onclick="initDecay(${p.id})">DECAY</div>`;
+                html += `</div><div class="delete-label" onclick="initSupernova(${p.id})">EXPLODE</div>`;
                 wrapper.innerHTML = html;
                 setupSwipe(wrapper, p.id);
                 listView.appendChild(wrapper);
@@ -172,7 +181,7 @@
             const qdThreshold = window.innerWidth * 0.65;
 
             const start = (e) => {
-                if (isDecaying) return;
+                if (isExploding) return;
                 if (activeSwipeContent && activeSwipeContent !== content) activeSwipeContent.style.transform = 'translateX(0px)';
                 isDragging = true;
                 startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
@@ -183,7 +192,8 @@
                 currentDiff = startX - (e.type.includes('mouse') ? e.pageX : e.touches[0].clientX);
                 if (currentDiff > 0) {
                     content.style.transform = `translateX(-${currentDiff}px)`;
-                    wrapper.style.backgroundColor = currentDiff > qdThreshold ? "#fff" : "#00ffcc"; 
+                    // 스와이프 길이에 따라 배경 광도 조절
+                    wrapper.style.backgroundColor = `rgba(255, 255, 255, ${currentDiff / qdThreshold})`; 
                 }
             };
             const end = () => {
@@ -191,12 +201,13 @@
                 isDragging = false;
                 content.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
                 if (currentDiff > qdThreshold) {
-                    initDecay(id);
+                    initSupernova(id);
                 } else if (currentDiff > 70) {
                     content.style.transform = 'translateX(-80px)';
                     activeSwipeContent = content;
                 } else {
                     content.style.transform = 'translateX(0px)';
+                    wrapper.style.backgroundColor = '#fff';
                 }
             };
 
@@ -208,76 +219,70 @@
             content.addEventListener('touchend', end);
         }
 
-        // --- ⚛️ THE QUANTUM DECAY LOGIC ---
-        async function initDecay(id) {
-            if (isDecaying) return;
+        // --- 🎆 THE SUPERNOVA LOGIC ---
+        function initSupernova(id) {
+            if (isExploding) return;
             const wrapper = document.querySelector(`.list-item-wrapper[data-id="${id}"]`);
-            const content = wrapper.querySelector('.list-item-content');
             if(!wrapper) return;
 
-            isDecaying = true;
+            isExploding = true;
+            const rect = wrapper.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
 
-            // 1. 현재 행 캡처 (픽셀 색상 추출용)
-            const canvas = await html2canvas(content, { backgroundColor: null, scale: 1 });
-            const rect = content.getBoundingClientRect();
-            
-            // 2. 원본 행 숨기기
-            content.classList.add('decaying');
-            wrapper.style.backgroundColor = 'transparent';
+            // 1. 임플로전 (수축) 시작
+            wrapper.classList.add('exploding');
 
-            // 3. 양자 큐브 생성
-            const container = document.createElement('div');
-            document.body.appendChild(container);
-            
-            const rows = 4, cols = 10; 
-            const cubeSize = rect.width / cols;
-
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    const cube = document.createElement('div');
-                    cube.className = 'quantum-cube';
-                    cube.style.width = cubeSize + 'px';
-                    cube.style.height = (rect.height / rows) + 'px';
-                    cube.style.left = (rect.left + c * cubeSize) + 'px';
-                    cube.style.top = (rect.top + r * (rect.height / rows)) + 'px';
-                    
-                    // 각 큐브마다 랜덤한 3D 궤적 설정 (화면 밖으로 튀어나옴)
-                    const moveX = (Math.random() - 0.5) * 500;
-                    const moveY = (Math.random() - 0.5) * 500;
-                    const moveZ = 1000 + Math.random() * 2000; // Z축으로 튀어나옴
-                    const rotateX = Math.random() * 720;
-                    const rotateY = Math.random() * 720;
-
-                    container.appendChild(cube);
-                    
-                    cube.animate([
-                        { 
-                            transform: 'translateZ(0) rotateX(0) rotateY(0)', 
-                            opacity: 1,
-                            filter: 'brightness(1) blur(0px)'
-                        },
-                        { 
-                            transform: `translate3d(${moveX}px, ${moveY}px, ${moveZ}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`, 
-                            opacity: 0,
-                            filter: 'brightness(3) blur(4px)'
-                        }
-                    ], {
-                        duration: 1000 + Math.random() * 1000,
-                        easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)',
-                        fill: 'forwards'
-                    });
-                }
-            }
-
-            // 4. 애니메이션 완료 후 정리
             setTimeout(() => {
-                container.remove();
-                phrases = phrases.filter(p => p.id !== id);
-                if (document.getElementById('study-view').style.display === 'block') renderStudyMode();
-                else renderList(currentMode);
-                isDecaying = false;
-                activeSwipeContent = null;
-            }, 1500);
+                // 2. 화이트아웃 플래시
+                const flash = document.getElementById('flash-overlay');
+                flash.animate([
+                    { opacity: 0 },
+                    { opacity: 1, offset: 0.1 },
+                    { opacity: 0 }
+                ], { duration: 800, easing: 'ease-out' });
+
+                // 3. 입자(Particle) 생성
+                createParticles(centerX, centerY);
+
+                // 4. 데이터 업데이트 및 리랜더링
+                setTimeout(() => {
+                    phrases = phrases.filter(p => p.id !== id);
+                    if (document.getElementById('study-view').style.display === 'block') renderStudyMode();
+                    else renderList(currentMode);
+                    isExploding = false;
+                    activeSwipeContent = null;
+                }, 400);
+
+            }, 400); // 수축 애니메이션 시간
+        }
+
+        function createParticles(x, y) {
+            const particleCount = 40;
+            for (let i = 0; i < particleCount; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 6 + 2;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                
+                document.body.appendChild(p);
+
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 300 + 100;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+
+                p.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], {
+                    duration: 600 + Math.random() * 400,
+                    easing: 'cubic-bezier(0, .9, .57, 1)'
+                }).onfinish = () => p.remove();
+            }
         }
 
         function renderStudyMode() {
