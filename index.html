@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese Pro - SHRINK SINGULARITY</title>
+    <title>Business Japanese Pro - COMPLETE EDITION</title>
     <style>
         /* --- 공통 스타일 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,7 +26,7 @@
             color: #fff; opacity: 0.5; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.3); 
             padding: 4px 12px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.3s;
         }
-        .nav-mode.active { opacity: 1; background-color: #6200ee; color: #fff; border-color: #6200ee; box-shadow: 0 0 15px rgba(98, 0, 238, 0.5); }
+        .nav-mode.active { opacity: 1; background-color: #6200ee; color: #fff; border-color: #6200ee; }
 
         /* --- 컨테이너 --- */
         .container { padding-top: 60px; max-width: 800px; margin: 0 auto; min-height: 100vh; }
@@ -37,7 +37,7 @@
         /* --- 리스트 모드 스타일 --- */
         .list-container { margin-top: 20px; border-top: 0.5px solid #2c2c2e; display: none; }
         .list-item-wrapper { 
-            position: relative; background: linear-gradient(90deg, #6200ee, #03dac6); overflow: visible; border-bottom: 0.5px solid #2c2c2e; 
+            position: relative; background: #6200ee; overflow: hidden; border-bottom: 0.5px solid #2c2c2e; 
         }
         .list-item-content {
             position: relative; width: 100%; padding: 18px 20px; background-color: #000; z-index: 2;
@@ -45,61 +45,59 @@
             transform-style: preserve-3d;
         }
         .category { font-size: 10px; color: #03dac6; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px; }
-        .japanese { font-size: 18px; font-weight: 500; color: #fff; transition: font-size 0.4s ease; }
+        .japanese { font-size: 18px; font-weight: 500; color: #fff; }
         .reading { font-size: 13px; color: #86868b; }
         .meaning { font-size: 16px; color: #f5f5f7; margin-top: 4px; }
         
         .delete-label {
             position: absolute; right: 0; top: 0; height: 100%; width: 80px;
             background: transparent; color: #fff; display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 900; z-index: 1; cursor: pointer; letter-spacing: 1px;
+            font-size: 11px; font-weight: 900; z-index: 1; cursor: pointer;
         }
 
-        /* 🌀 2배속 시공간 왜곡 + 점진적 축소 애니메이션 */
+        /* 🌀 로컬 싱귤래리티 (해당 행 전용) */
         .singularity-active {
             pointer-events: none !important;
-            animation: singularityShrinkWarp 0.4s ease-in forwards, glitchEffect 0.1s infinite;
+            z-index: 100;
+            animation: 
+                singularityShrinkWarp 0.4s ease-in forwards, 
+                glitchEffect 0.08s infinite, 
+                localShake 0.1s infinite;
         }
 
-        /* 텍스트 요소들 별도로 크기 감소 */
-        .singularity-active div {
+        .singularity-active * {
             animation: textShrink 0.4s ease-in forwards;
         }
 
-        .screen-shake { animation: screenShake 0.05s infinite; }
+        @keyframes localShake {
+            0% { transform: translate(2px, 1px) rotate(0.5deg); }
+            50% { transform: translate(-2px, -1px) rotate(-0.5deg); }
+            100% { transform: translate(1px, -1px) rotate(0deg); }
+        }
 
         @keyframes singularityShrinkWarp {
-            0% { transform: scale(1) rotate(0deg) skew(0deg); filter: hue-rotate(0deg) blur(0); opacity: 1; }
-            50% { transform: scale(0.6) rotate(20deg) skew(30deg); filter: hue-rotate(180deg) brightness(2.5); }
-            100% { transform: scale(0) rotate(1440deg) skew(90deg); filter: hue-rotate(360deg) blur(50px); opacity: 0; }
+            0% { transform: scale(1) rotate(0deg); filter: hue-rotate(0deg) blur(0); opacity: 1; }
+            100% { transform: scale(0) rotate(720deg); filter: hue-rotate(360deg) blur(40px); opacity: 0; }
         }
 
         @keyframes textShrink {
             0% { transform: scale(1); }
-            100% { transform: scale(0.1); }
+            100% { transform: scale(0.2); }
         }
 
         @keyframes glitchEffect {
-            0% { text-shadow: 3px 0 #ff00c1, -3px 0 #00fff9; transform: translate(0); }
-            50% { text-shadow: -3px 0 #ff00c1, 3px 0 #00fff9; transform: translate(3px, -2px); }
-            100% { text-shadow: 3px 0 #00fff9, -3px 0 #ff00c1; transform: translate(0); }
-        }
-
-        @keyframes screenShake {
-            0% { transform: translate(2px, 2px); }
-            100% { transform: translate(-2px, -2px); }
+            0% { text-shadow: 3px 0 #ff00c1, -3px 0 #00fff9; }
+            50% { text-shadow: -3px 0 #ff00c1, 3px 0 #00fff9; filter: contrast(1.5) brightness(1.5); }
+            100% { text-shadow: 3px 0 #00fff9, -3px 0 #ff00c1; }
         }
 
         /* --- 학습 모드 스타일 --- */
         .study-container { display: none; padding-bottom: 100px; }
         .phrase-block {
             height: 70vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease;
-            opacity: 0.1; transform: scale(0.8);
+            text-align: center; transition: 0.8s; opacity: 0.1; transform: scale(0.8);
         }
         .phrase-block.active { opacity: 1; transform: scale(1.1); }
-        .phrase-block .japanese { font-size: 2.5rem; margin-bottom: 15px; }
-        .phrase-block .meaning { font-size: 1.8rem; }
         
         footer { padding: 60px 20px; text-align: center; color: #424245; font-size: 12px; }
     </style>
@@ -115,43 +113,38 @@
         </ul>
     </nav>
 
-    <div class="container" id="main-container">
-        <section class="hero-section" id="hero">
-            <h1 id="hero-title">Phrases</h1>
-            <p id="hero-desc">데이터가 소멸하며 점차 작아집니다.</p>
+    <div class="container">
+        <section class="hero-section">
+            <h1>Phrases</h1>
+            <p>스와이프하여 차원 너머로 소거하세요.</p>
         </section>
 
         <div id="list-view" class="list-container"></div>
         <div id="study-view" class="study-container"></div>
     </div>
 
-    <footer id="footer">
-        <p>© 2026 Business Japanese Professional.</p>
-    </footer>
+    <footer><p>© 2026 Business Japanese Professional.</p></footer>
 
     <script>
         let phrases = [
             { id: 1, cat: "인사 및 연락", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
             { id: 2, cat: "인사 및 연락", jp: "お疲れ様でございます。", rd: "오츠카레사마데 고자이마스", mn: "수고 많으십니다" },
-            { id: 3, cat: "방문 및 회의", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
+            { id: 3, cat: "방문 및 회의", jp: "名刺을 頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
             { id: 4, cat: "요청 및 문의", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
             { id: 5, cat: "승낙 및 거절", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" },
             { id: 6, cat: "사과 및 감사", jp: "誠に申し訳ございません。", rd: "마코토니 모-시와케 고자이마센", mn: "진심으로 사과드립니다" }
         ];
 
         let currentMode = 'all';
-        let activeSwipeContent = null;
-        let observer = null;
         let isWarping = false;
+        let activeSwipeContent = null;
 
         function enableStudyMode() {
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             document.getElementById('btn-study').classList.add('active');
             document.getElementById('list-view').style.display = 'none';
             document.getElementById('study-view').style.display = 'block';
-            document.getElementById('hero-title').innerText = "Study Mode";
             renderStudyMode();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function filterList(type, element) {
@@ -160,7 +153,6 @@
             element.classList.add('active');
             document.getElementById('study-view').style.display = 'none';
             document.getElementById('list-view').style.display = 'block';
-            document.getElementById('hero-title').innerText = type === 'all' ? "Phrases" : (type === 'jp' ? "日本語" : "한국어");
             renderList(type);
         }
 
@@ -172,16 +164,14 @@
                 const wrapper = document.createElement('div');
                 wrapper.className = 'list-item-wrapper';
                 wrapper.setAttribute('data-id', p.id);
-                let html = `<div class="list-item-content"><div class="category">${p.cat}</div>`;
-                if (type === 'all' || type === 'jp') {
-                    html += `<div class="japanese">${p.jp}</div>`;
-                    if(type !== 'ko') html += `<div class="reading">${p.rd}</div>`;
-                }
-                if (type === 'all' || type === 'ko') {
-                    html += `<div class="meaning">${p.mn}</div>`;
-                }
-                html += `</div><div class="delete-label" onclick="initSingularity(${p.id})">WIPE</div>`;
-                wrapper.innerHTML = html;
+                wrapper.innerHTML = `
+                    <div class="list-item-content">
+                        <div class="category">${p.cat}</div>
+                        ${(type==='all' || type==='jp') ? `<div class="japanese">${p.jp}</div><div class="reading">${p.rd}</div>` : ''}
+                        ${(type==='all' || type==='ko') ? `<div class="meaning">${p.mn}</div>` : ''}
+                    </div>
+                    <div class="delete-label" onclick="initSingularity(${p.id})">WIPE</div>
+                `;
                 setupSwipe(wrapper, p.id);
                 listView.appendChild(wrapper);
             });
@@ -189,34 +179,42 @@
 
         function setupSwipe(wrapper, id) {
             const content = wrapper.querySelector('.list-item-content');
-            let startX = 0, isDragging = false, currentDiff = 0;
-            const qdThreshold = window.innerWidth * 0.6;
+            let startX = 0, currentDiff = 0, isDragging = false;
+            const qdThreshold = window.innerWidth * 0.6; // 60% 이상 스와이프 시 즉시 삭제
 
             const start = (e) => {
                 if (isWarping) return;
-                if (activeSwipeContent && activeSwipeContent !== content) activeSwipeContent.style.transform = 'translateX(0px)';
-                isDragging = true;
+                // 다른 열려있는 행 닫기
+                if (activeSwipeContent && activeSwipeContent !== content) {
+                    activeSwipeContent.style.transform = 'translateX(0px)';
+                }
                 startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
                 content.style.transition = 'none';
+                isDragging = true;
             };
+
             const move = (e) => {
                 if (!isDragging) return;
-                currentDiff = startX - (e.type.includes('mouse') ? e.pageX : e.touches[0].clientX);
+                const x = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+                currentDiff = startX - x;
                 if (currentDiff > 0) {
                     content.style.transform = `translateX(-${currentDiff}px)`;
                 }
             };
+
             const end = () => {
                 if (!isDragging) return;
                 isDragging = false;
                 content.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                
                 if (currentDiff > qdThreshold) {
-                    initSingularity(id);
+                    initSingularity(id); // 임계점 넘으면 자동 삭제
                 } else if (currentDiff > 70) {
-                    content.style.transform = 'translateX(-80px)';
+                    content.style.transform = 'translateX(-80px)'; // 버튼 보이기
                     activeSwipeContent = content;
                 } else {
-                    content.style.transform = 'translateX(0px)';
+                    content.style.transform = 'translateX(0px)'; // 원복
+                    activeSwipeContent = null;
                 }
             };
 
@@ -231,47 +229,36 @@
         function initSingularity(id) {
             if (isWarping) return;
             const wrapper = document.querySelector(`.list-item-wrapper[data-id="${id}"]`);
-            const content = wrapper.querySelector('.list-item-content');
             if(!wrapper) return;
+            const content = wrapper.querySelector('.list-item-content');
 
             isWarping = true;
-            document.body.classList.add('screen-shake');
             content.classList.add('singularity-active');
             
-            if (navigator.vibrate) navigator.vibrate([20, 10, 20]);
+            if (navigator.vibrate) navigator.vibrate([15, 10, 20]);
 
             setTimeout(() => {
-                document.body.classList.remove('screen-shake');
                 phrases = phrases.filter(p => p.id !== id);
                 if (document.getElementById('study-view').style.display === 'block') renderStudyMode();
                 else renderList(currentMode);
                 isWarping = false;
                 activeSwipeContent = null;
-            }, 420); // 0.4s 애니메이션에 맞춘 지연
+            }, 400); 
         }
 
         function renderStudyMode() {
             const studyView = document.getElementById('study-view');
             studyView.innerHTML = '';
-            if (observer) observer.disconnect();
             phrases.forEach(p => {
                 const block = document.createElement('div');
                 block.className = 'phrase-block';
-                block.innerHTML = `
-                    <div class="category">${p.cat}</div>
-                    <div class="japanese">${p.jp}</div>
-                    <div class="reading">${p.rd}</div>
-                    <div class="meaning">${p.mn}</div>
-                `;
+                block.innerHTML = `<div class="japanese">${p.jp}</div><div class="meaning">${p.mn}</div>`;
                 studyView.appendChild(block);
             });
-            observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) entry.target.classList.add('active');
-                    else entry.target.classList.remove('active');
-                });
+            const obs = new IntersectionObserver((es) => {
+                es.forEach(e => e.isIntersecting ? e.target.classList.add('active') : e.target.classList.remove('active'));
             }, { threshold: 0.6 });
-            document.querySelectorAll('.phrase-block').forEach(b => observer.observe(b));
+            document.querySelectorAll('.phrase-block').forEach(b => obs.observe(b));
         }
 
         filterList('all', document.getElementById('link-all'));
