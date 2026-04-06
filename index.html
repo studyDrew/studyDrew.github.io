@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese - 2x2 FLASH CARD IMPACT</title>
+    <title>Business Japanese - 2x2 IMPACT FIX</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; }
@@ -23,88 +23,84 @@
             display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
         }
 
-        /* --- 🃏 플래시 카드 3D 설정 --- */
-        .phrase-block {
-            perspective: 1000px; /* 3D 효과 깊이 */
-            position: relative; border: 0.2px solid #1c1c1e;
-        }
-        
+        /* --- 🃏 플래시 카드 설정 --- */
+        .phrase-block { perspective: 1000px; position: relative; border: 0.2px solid #1c1c1e; }
         .card-inner {
             position: relative; width: 100%; height: 100%;
             text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             transform-style: preserve-3d; cursor: pointer;
         }
 
-        /* 카드 뒤집기 상태 */
         .phrase-block.flipped .card-inner { transform: rotateY(180deg); }
-
         .card-front, .card-back {
             position: absolute; width: 100%; height: 100%;
             -webkit-backface-visibility: hidden; backface-visibility: hidden;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             padding: 20px;
         }
-
-        /* 카드 앞면 */
         .card-front { background-color: #000; z-index: 2; }
-        
-        /* 카드 뒷면 (일본어 전용) */
-        .card-back {
-            background-color: #1c1c1e; color: #03dac6;
-            transform: rotateY(180deg); z-index: 1;
-        }
+        .card-back { background-color: #1c1c1e; color: #03dac6; transform: rotateY(180deg); z-index: 1; }
 
-        /* [애니메이션] 낙하 효과 (앞면에만 적용) */
-        .card-front > div {
-            opacity: 0; transform: translateY(-300px) scale(1.5);
+        /* [애니메이션] 낙하 효과 */
+        .card-front > div:not(.dust-container) {
+            opacity: 0; transform: translateY(-600px) scale(2.0);
             transition: none; word-break: keep-all;
         }
 
-        .phrase-block.active .card-front > div {
-            animation: jobsDrop 0.5s cubic-bezier(0.2, 0, 0.4, 1.4) forwards;
+        .phrase-block.active .card-front > div:not(.dust-container) {
+            animation: jobsDropEnhanced 0.6s cubic-bezier(0.2, 0, 0.3, 1.3) forwards;
         }
 
-        /* 4단계 시차 */
-        .delay-0.active .card-front > div { animation-delay: 0s; }
-        .delay-1.active .card-front > div { animation-delay: 0.4s; }
-        .delay-2.active .card-front > div { animation-delay: 0.8s; }
-        .delay-3.active .card-front > div { animation-delay: 1.2s; }
+        /* --- 홀수 페이지 (1, 3, 5...): 순차 낙하 --- */
+        .odd-page .delay-0.active .card-front > div { animation-delay: 0s; }
+        .odd-page .delay-1.active .card-front > div { animation-delay: 0.4s; }
+        .odd-page .delay-2.active .card-front > div { animation-delay: 0.8s; }
+        .odd-page .delay-3.active .card-front > div { animation-delay: 1.2s; }
 
-        @keyframes jobsDrop {
-            0% { opacity: 0; transform: translateY(-300px) scale(1.5); }
+        /* --- 짝수 페이지 (2, 4, 6...): 동시 낙하 --- */
+        .even-page .phrase-block.active .card-front > div {
+            animation-delay: 0s !important;
+        }
+
+        @keyframes jobsDropEnhanced {
+            0% { opacity: 0; transform: translateY(-600px) scale(2.0); }
             60% { opacity: 1; transform: translateY(0) scale(1); }
-            80% { transform: translateY(-10px); }
+            80% { transform: translateY(-25px); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* 폰트 스타일 (2.0배 기준) */
         .category { font-size: 10px; color: #6200ee; margin-bottom: 10px; letter-spacing: 2px; font-weight: 800; }
         .meaning { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
         .reading { font-size: 1.1rem; color: #888; }
-        
-        /* 뒷면 일본어 크기 (더 크게) */
         .japanese-back { font-size: 2.2rem; font-weight: 800; line-height: 1.2; }
 
-        /* [먼지 효과] */
-        .dust-container { position: absolute; width: 100%; height: 10px; bottom: 20%; pointer-events: none; z-index: 3; }
-        .dust-particle { position: absolute; left: 50%; background: rgba(220, 220, 220, 0.6); border-radius: 50%; filter: blur(5px); opacity: 0; }
-        .phrase-block.active .dust-particle { animation: dustBurst 0.8s ease-out forwards; }
-        .delay-0.active .dust-particle { animation-delay: 0.35s; }
-        .delay-1.active .dust-particle { animation-delay: 0.75s; }
-        .delay-2.active .dust-particle { animation-delay: 1.15s; }
-        .delay-3.active .dust-particle { animation-delay: 1.55s; }
+        /* [먼지 효과] - 확산 범위 1배(기존)로 축소 */
+        .dust-container { position: absolute; width: 100%; height: 10px; bottom: 15%; pointer-events: none; z-index: 3; }
+        .dust-particle { position: absolute; left: 50%; background: rgba(255, 255, 255, 1.0); border-radius: 50%; filter: blur(3px); opacity: 0; }
+        .phrase-block.active .dust-particle { animation: dustBurstEnhanced 0.9s ease-out forwards; }
+        
+        /* 먼지 시차 (홀수 페이지) */
+        .odd-page .delay-0.active .dust-particle { animation-delay: 0.35s; }
+        .odd-page .delay-1.active .dust-particle { animation-delay: 0.75s; }
+        .odd-page .delay-2.active .dust-particle { animation-delay: 1.15s; }
+        .odd-page .delay-3.active .dust-particle { animation-delay: 1.55s; }
+        
+        /* 먼지 시차 (짝수 페이지 - 동시) */
+        .even-page .phrase-block.active .dust-particle {
+            animation-delay: 0.35s !important;
+        }
 
-        @keyframes dustBurst {
-            0% { opacity: 0; transform: translate(0, 0) scale(1); }
-            20% { opacity: 0.8; }
-            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(4); }
+        @keyframes dustBurstEnhanced {
+            0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+            10% { opacity: 1; }
+            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(5); }
         }
     </style>
 </head>
 <body>
 
     <nav class="apple-nav">
-        <div class="nav-list"><span class="nav-mode">FLASH CARD STUDY (2x2)</span></div>
+        <div class="nav-list"><span class="nav-mode">FLASH CARD (ODD: SEQ / EVEN: ALL)</span></div>
     </nav>
 
     <div id="study-view" class="study-container"></div>
@@ -126,15 +122,14 @@
             { id: 13, cat: "THANKS", jp: "大変助かりました。", rd: "타이헨 타스카리마시타", mn: "정말 큰 도움이 되었습니다" },
             { id: 14, cat: "PHONE", jp: "折り返しお電話いたします。", rd: "오리카에시 오뎅와 이타시마스", mn: "다시 전화드리겠습니다" },
             { id: 15, cat: "PROPOSAL", jp: "検討させていただきます。", rd: "켄토-사세테 이타다키마스", mn: "검토하도록 하겠습니다" },
-            { id: 16, cat: "MEETING", jp: "失礼ですが、お名前を伺えますか。", rd: "시츠레이데스가 오나마에오 우카가에마스카", mn: "실례지만 성함을 여쭤봐도 될까요?" }
+            { id: 16, cat: "MEETING", jp: "失礼ですが、お名前을伺えますか。", rd: "시츠레이데스가 오나마에오 우카가에마스카", mn: "실례지만 성함을 여쭤봐도 될까요?" }
         ];
 
-        // 🔊 TTS 함수
         function speakJapanese(text) {
-            window.speechSynthesis.cancel(); // 이전 음성 중단
+            window.speechSynthesis.cancel();
             const msg = new SpeechSynthesisUtterance(text);
             msg.lang = 'ja-JP';
-            msg.rate = 0.9; // 약간 천천히
+            msg.rate = 0.9;
             window.speechSynthesis.speak(msg);
         }
 
@@ -143,8 +138,9 @@
             studyView.innerHTML = '';
 
             for (let i = 0; i < phrases.length; i += 4) {
+                const pageNum = Math.floor(i / 4) + 1;
                 const section = document.createElement('div');
-                section.className = 'study-section';
+                section.className = `study-section ${pageNum % 2 !== 0 ? 'odd-page' : 'even-page'}`;
                 
                 [0, 1, 2, 3].forEach(offset => {
                     const p = phrases[i + offset];
@@ -154,11 +150,17 @@
                     block.className = `phrase-block delay-${offset}`;
                     
                     let dustHTML = '<div class="dust-container">';
-                    for(let j=0; j<8; j++) {
-                        const angle = (j / 8) * Math.PI * 2;
-                        const dx = Math.cos(angle) * 120 + 'px';
-                        const dy = Math.sin(angle) * 30 + 'px';
-                        dustHTML += `<div class="dust-particle" style="--dx:${dx}; --dy:${dy}; width:8px; height:8px; left:50%"></div>`;
+                    const particleCount = 24; 
+                    for(let j=0; j<particleCount; j++) {
+                        const angle = (j / particleCount) * Math.PI * 2;
+                        const randomForce = Math.random() * 0.4 + 0.6; 
+                        // 확산 범위 1배로 축소 (90px)
+                        const dx = Math.cos(angle) * 90 * randomForce + 'px'; 
+                        const dy = Math.sin(angle) * 40 * randomForce - 10 + 'px'; 
+                        
+                        const size = (Math.random() * 6 + 8) + 'px'; 
+
+                        dustHTML += `<div class="dust-particle" style="--dx:${dx}; --dy:${dy}; width:${size}; height:${size}; left:50%; animation-delay:inherit; margin-left:-${parseInt(size)/2}px;"></div>`;
                     }
                     dustHTML += '</div>';
 
@@ -195,7 +197,6 @@
             document.querySelectorAll('.study-section').forEach(s => observer.observe(s));
         }
 
-        // 🔄 카드 뒤집기 및 읽기
         function flipCard(cardInner, text) {
             const block = cardInner.parentElement;
             const isFlipped = block.classList.toggle('flipped');
