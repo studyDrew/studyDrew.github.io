@@ -3,209 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese - 2x2 IMPACT FIX</title>
+    <title>Business Japanese Pro - BIG FONT EDITION</title>
     <style>
+        /* --- 공통 스타일 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; }
-        
-        .apple-nav { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); z-index: 9999; border-bottom: 0.5px solid rgba(255,255,255,0.1); }
-        .nav-list { display: flex; justify-content: center; align-items: center; height: 100%; }
-        .nav-mode { color: #fff; background-color: #6200ee; padding: 4px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; }
+        body {
+            background-color: #000; color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", sans-serif;
+            line-height: 1.5; user-select: none; overflow-x: hidden;
+        }
 
+        /* --- 네비게이션 --- */
+        .apple-nav {
+            position: fixed; top: 0; width: 100%; height: 60px;
+            background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);
+            z-index: 9999; border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-list { display: flex; justify-content: space-around; align-items: center; list-style: none; height: 100%; padding: 0 10px; }
+        .nav-link { color: #f5f5f7; font-size: 14px; opacity: 0.5; text-decoration: none; cursor: pointer; transition: 0.3s; }
+        .nav-link.active { opacity: 1; font-weight: 600; color: #6200ee; text-shadow: 0 0 8px #6200ee; }
+        .nav-mode { 
+            color: #fff; opacity: 0.5; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.3); 
+            padding: 4px 12px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.2s;
+        }
+        .nav-mode.active { opacity: 1; background-color: #6200ee; color: #fff; border-color: #6200ee; box-shadow: 0 0 10px rgba(98, 0, 238, 0.4); }
+
+        /* --- 컨테이너 --- */
+        .container { padding-top: 60px; max-width: 800px; margin: 0 auto; min-height: 100vh; }
+        
+        /* --- 리스트 모드 스타일 --- */
+        .list-container { margin-top: 20px; border-top: 0.5px solid #2c2c2e; display: none; }
+        .list-item-wrapper { position: relative; background: #6200ee; overflow: hidden; border-bottom: 0.5px solid #2c2c2e; }
+        .list-item-content {
+            position: relative; width: 100%; padding: 22px 20px; background-color: #000; z-index: 2;
+            cursor: grab; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .category { font-size: 10px; color: #03dac6; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
+        .japanese { font-size: 19px; font-weight: 500; color: #fff; }
+        .reading { font-size: 13px; color: #86868b; }
+        .meaning { font-size: 16px; color: #f5f5f7; margin-top: 6px; border-top: 0.5px solid #1c1c1e; padding-top: 6px; }
+        .delete-label {
+            position: absolute; right: 0; top: 0; height: 100%; width: 80px;
+            background: transparent; color: #fff; display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 900; z-index: 1;
+        }
+
+        .singularity-active { animation: singularityShrinkWarp 0.2s ease-in forwards; pointer-events: none; }
+        @keyframes singularityShrinkWarp { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+
+        /* --- ⚡ 학습모드 (이탈 방지 로직 적용) --- */
         .study-container { 
-            height: calc(100vh - 60px); overflow-y: scroll; 
-            scroll-snap-type: y mandatory; scrollbar-width: none; margin-top: 60px; 
+            display: none; height: calc(100vh - 60px); overflow-y: scroll; 
+            scroll-snap-type: y mandatory; scrollbar-width: none; 
         }
         .study-container::-webkit-scrollbar { display: none; }
 
-        .study-section { 
-            height: calc(100vh - 60px); scroll-snap-align: start; 
-            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+        @property --study-scale {
+          syntax: '<number>';
+          inherits: true;
+          initial-value: 2.0;
         }
 
-        /* --- 🃏 플래시 카드 설정 --- */
-        .phrase-block { perspective: 1000px; position: relative; border: 0.2px solid #1c1c1e; }
-        .card-inner {
-            position: relative; width: 100%; height: 100%;
-            text-align: center; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-style: preserve-3d; cursor: pointer;
+        .phrase-block {
+            height: calc(100vh - 60px); display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 0 24px; scroll-snap-align: start;
+            opacity: 0.05; transform: scale(0.9);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            --study-scale: 2.0;
         }
 
-        .phrase-block.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back {
-            position: absolute; width: 100%; height: 100%;
-            -webkit-backface-visibility: hidden; backface-visibility: hidden;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 20px;
-        }
-        .card-front { background-color: #000; z-index: 2; }
-        .card-back { background-color: #1c1c1e; color: #03dac6; transform: rotateY(180deg); z-index: 1; }
-
-        /* [애니메이션] 낙하 효과 */
-        .card-front > div:not(.dust-container) {
-            opacity: 0; transform: translateY(-600px) scale(2.0);
-            transition: none; word-break: keep-all;
+        @keyframes fontGrow {
+            from { --study-scale: 2.0; }
+            to { --study-scale: 3.2; } /* 이탈 방지를 위해 최대치를 3.2로 살짝 조정 */
         }
 
-        .phrase-block.active .card-front > div:not(.dust-container) {
-            animation: jobsDropEnhanced 0.6s cubic-bezier(0.2, 0, 0.3, 1.3) forwards;
+        .phrase-block.active { 
+            opacity: 1; 
+            transform: scale(1); 
+            animation: fontGrow 0.8s ease-out forwards; /* 속도감 있게 0.8초 설정 */
         }
 
-        /* --- 홀수 페이지 (1, 3, 5...): 순차 낙하 --- */
-        .odd-page .delay-0.active .card-front > div { animation-delay: 0s; }
-        .odd-page .delay-1.active .card-front > div { animation-delay: 0.4s; }
-        .odd-page .delay-2.active .card-front > div { animation-delay: 0.8s; }
-        .odd-page .delay-3.active .card-front > div { animation-delay: 1.2s; }
-
-        /* --- 짝수 페이지 (2, 4, 6...): 동시 낙하 --- */
-        .even-page .phrase-block.active .card-front > div {
-            animation-delay: 0s !important;
+        .phrase-block .japanese { 
+            font-size: calc(1.05rem * var(--study-scale)); 
+            line-height: 1.25; font-weight: 700; margin-bottom: 12px;
+            width: 100%; max-width: 90vw;
+            word-break: break-all; overflow-wrap: break-word; /* 긴 문장 자동 줄바꿈 */
         }
-
-        @keyframes jobsDropEnhanced {
-            0% { opacity: 0; transform: translateY(-600px) scale(2.0); }
-            60% { opacity: 1; transform: translateY(0) scale(1); }
-            80% { transform: translateY(-25px); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+        .phrase-block .meaning { 
+            font-size: calc(0.85rem * var(--study-scale)); 
+            color: #03dac6; border-top: 1px solid #333; padding-top: 15px; 
+            font-weight: 600; width: 100%; max-width: 90vw;
+            word-break: keep-all;
         }
+        .phrase-block .reading { font-size: 1.1rem; color: #86868b; margin-bottom: 20px; }
+        .phrase-block .category { font-size: 12px; color: #6200ee; margin-bottom: 20px; letter-spacing: 2px; }
 
-        .category { font-size: 10px; color: #6200ee; margin-bottom: 10px; letter-spacing: 2px; font-weight: 800; }
-        .meaning { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 5px; }
-        .reading { font-size: 1.1rem; color: #888; }
-        .japanese-back { font-size: 2.2rem; font-weight: 800; line-height: 1.2; }
-
-        /* [먼지 효과] - 확산 범위 1배(기존)로 축소 */
-        .dust-container { position: absolute; width: 100%; height: 10px; bottom: 15%; pointer-events: none; z-index: 3; }
-        .dust-particle { position: absolute; left: 50%; background: rgba(255, 255, 255, 1.0); border-radius: 50%; filter: blur(3px); opacity: 0; }
-        .phrase-block.active .dust-particle { animation: dustBurstEnhanced 0.9s ease-out forwards; }
-        
-        /* 먼지 시차 (홀수 페이지) */
-        .odd-page .delay-0.active .dust-particle { animation-delay: 0.35s; }
-        .odd-page .delay-1.active .dust-particle { animation-delay: 0.75s; }
-        .odd-page .delay-2.active .dust-particle { animation-delay: 1.15s; }
-        .odd-page .delay-3.active .dust-particle { animation-delay: 1.55s; }
-        
-        /* 먼지 시차 (짝수 페이지 - 동시) */
-        .even-page .phrase-block.active .dust-particle {
-            animation-delay: 0.35s !important;
-        }
-
-        @keyframes dustBurstEnhanced {
-            0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
-            10% { opacity: 1; }
-            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(5); }
-        }
+        .hero-section { padding: 40px 20px 20px; text-align: center; }
+        .hero-section h1 { font-size: 32px; font-weight: 700; }
     </style>
 </head>
 <body>
 
     <nav class="apple-nav">
-        <div class="nav-list"><span class="nav-mode">FLASH CARD (ODD: SEQ / EVEN: ALL)</span></div>
+        <ul class="nav-list">
+            <li><span id="btn-study" class="nav-mode" onclick="enableStudyMode()">학습모드</span></li>
+            <li><a id="link-all" class="nav-link" onclick="filterList('all', this)">전부</a></li>
+            <li><a class="nav-link" onclick="filterList('jp', this)">일본어</a></li>
+            <li><a class="nav-link" onclick="filterList('ko', this)">한국어</a></li>
+        </ul>
     </nav>
 
-    <div id="study-view" class="study-container"></div>
+    <div class="container">
+        <section class="hero-section" id="hero" style="display:none;">
+            <h1 id="hero-title">Phrases</h1>
+            <p id="hero-desc">비즈니스 일본어 마스터를 위한 싱귤래리티.</p>
+        </section>
+        <div id="list-view" class="list-container"></div>
+        <div id="study-view" class="study-container"></div>
+    </div>
 
     <script>
-        const phrases = [
-            { id: 1, cat: "CONTACT", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
-            { id: 2, cat: "MEETING", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
-            { id: 3, cat: "REQUEST", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
-            { id: 4, cat: "RESPONSE", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" },
-            { id: 5, cat: "PHONE", jp: "お電話代わりました。", rd: "오뎅와 카와리마시타", mn: "전화 바꿨습니다" },
-            { id: 6, cat: "PROPOSAL", jp: "一点、ご提案がございます。", rd: "잇텐 고테이안가 고자이마스", mn: "한 가지 제안드릴 것이 있습니다" },
-            { id: 7, cat: "ATTITUDE", jp: "お力添えをお願いいたします。", rd: "오치카라조에오 오네가이 이타시마스", mn: "도움을 부탁드립니다" },
-            { id: 8, cat: "VISIT", jp: "お忙しい中、恐縮です。", rd: "오이소가시이 나카 쿄-슈쿠데스", mn: "바쁘신 와중에 죄송합니다" },
-            { id: 9, cat: "GREETING", jp: "今後ともよろしくお願いいたします。", rd: "콩고토모 요로시쿠 오네가이 이타시마스", mn: "앞으로도 잘 부탁드립니다" },
-            { id: 10, cat: "APOLOGY", jp: "誠に申し訳ございません。", rd: "마코토니 모-시와케 고자이마센", mn: "진심으로 사과드립니다" },
-            { id: 11, cat: "CONFIRM", jp: "念のため確認させてください。", rd: "넨노타메 카쿠닌 사세테쿠다사이", mn: "만약을 위해 확인 부탁드립니다" },
-            { id: 12, cat: "SCHEDULE", jp: "ご都合はいかがでしょうか。", rd: "고츠고-와 이카가데쇼-카", mn: "스케줄은 어떠신가요?" },
-            { id: 13, cat: "THANKS", jp: "大変助かりました。", rd: "타이헨 타스카리마시타", mn: "정말 큰 도움이 되었습니다" },
-            { id: 14, cat: "PHONE", jp: "折り返しお電話いたします。", rd: "오리카에시 오뎅와 이타시마스", mn: "다시 전화드리겠습니다" },
-            { id: 15, cat: "PROPOSAL", jp: "検討させていただきます。", rd: "켄토-사세테 이타다키마스", mn: "검토하도록 하겠습니다" },
-            { id: 16, cat: "MEETING", jp: "失礼ですが、お名前을伺えますか。", rd: "시츠레이데스가 오나마에오 우카가에마스카", mn: "실례지만 성함을 여쭤봐도 될까요?" }
+        let phrases = [
+            { id: 1, cat: "인사 및 연락", jp: "お世話になっております。", rd: "오세와니 낫테 오리마스", mn: "신세지고 있습니다" },
+            { id: 2, cat: "인사 및 연락", jp: "お疲れ様でございます。", rd: "오츠카레사마데 고자이마스", mn: "수고 많으십니다" },
+            { id: 3, cat: "방문 및 회의", jp: "名刺を頂戴いたします。", rd: "메-시오 쵸-다이 이타시마스", mn: "명함 받겠습니다" },
+            { id: 4, cat: "요청 및 문의", jp: "ご教示いただけますと幸いです。", rd: "고교-지 이타다케마스토 사이와이데스", mn: "알려주시면 감사하겠습니다" },
+            { id: 5, cat: "승낙 및 거절", jp: "承知いたしました。", rd: "쇼-치 이타시마시타", mn: "알겠습니다" },
+            { id: 6, cat: "사과 및 감사", jp: "誠に申し訳ございません。", rd: "마코토니 모-시와케 고자이마센", mn: "진심으로 사과드립니다" }
         ];
 
-        function speakJapanese(text) {
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance(text);
-            msg.lang = 'ja-JP';
-            msg.rate = 0.9;
-            window.speechSynthesis.speak(msg);
+        let currentMode = 'all', isWarping = false, studyObserver = null;
+
+        function enableStudyMode() {
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById('btn-study').classList.add('active');
+            document.getElementById('hero').style.display = 'none';
+            document.getElementById('list-view').style.display = 'none';
+            document.getElementById('study-view').style.display = 'block';
+            renderStudyMode();
+        }
+
+        function filterList(type, element) {
+            document.getElementById('btn-study').classList.remove('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('hero').style.display = 'block';
+            document.getElementById('study-view').style.display = 'none';
+            document.getElementById('list-view').style.display = 'block';
+            renderList(type);
+        }
+
+        function renderList(type) {
+            currentMode = type;
+            const listView = document.getElementById('list-view');
+            listView.innerHTML = '';
+            phrases.forEach(p => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'list-item-wrapper';
+                wrapper.setAttribute('data-id', p.id);
+                wrapper.innerHTML = `
+                    <div class="list-item-content">
+                        <div class="category">${p.cat}</div>
+                        ${(type==='all' || type==='jp') ? `<div class="japanese">${p.jp}</div><div class="reading">${p.rd}</div>` : ''}
+                        ${(type==='all' || type==='ko') ? `<div class="meaning">${p.mn}</div>` : ''}
+                    </div>
+                    <div class="delete-label" onclick="initSingularity(${p.id})">WIPE</div>
+                `;
+                setupSwipe(wrapper, p.id);
+                listView.appendChild(wrapper);
+            });
+        }
+
+        function setupSwipe(wrapper, id) {
+            const content = wrapper.querySelector('.list-item-content');
+            let startX = 0, currentDiff = 0, isDragging = false;
+            const start = (e) => {
+                if (isWarping) return;
+                startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+                content.style.transition = 'none';
+                isDragging = true;
+            };
+            const move = (e) => {
+                if (!isDragging) return;
+                const x = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+                currentDiff = startX - x;
+                if (currentDiff > 0) content.style.transform = `translateX(-${currentDiff}px)`;
+            };
+            const end = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                content.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                if (currentDiff > window.innerWidth * 0.5) initSingularity(id);
+                else if (currentDiff > 70) content.style.transform = 'translateX(-80px)';
+                else content.style.transform = 'translateX(0px)';
+            };
+            content.addEventListener('mousedown', start);
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', end);
+            content.addEventListener('touchstart', start);
+            content.addEventListener('touchmove', move);
+            content.addEventListener('touchend', end);
+        }
+
+        function initSingularity(id) {
+            if (isWarping) return;
+            const wrapper = document.querySelector(`.list-item-wrapper[data-id="${id}"]`);
+            if(!wrapper) return;
+            isWarping = true;
+            wrapper.querySelector('.list-item-content').classList.add('singularity-active');
+            setTimeout(() => {
+                phrases = phrases.filter(p => p.id !== id);
+                renderList(currentMode);
+                isWarping = false;
+            }, 220);
         }
 
         function renderStudyMode() {
             const studyView = document.getElementById('study-view');
             studyView.innerHTML = '';
+            if (studyObserver) studyObserver.disconnect();
 
-            for (let i = 0; i < phrases.length; i += 4) {
-                const pageNum = Math.floor(i / 4) + 1;
-                const section = document.createElement('div');
-                section.className = `study-section ${pageNum % 2 !== 0 ? 'odd-page' : 'even-page'}`;
-                
-                [0, 1, 2, 3].forEach(offset => {
-                    const p = phrases[i + offset];
-                    if (!p) return;
-                    
-                    const block = document.createElement('div');
-                    block.className = `phrase-block delay-${offset}`;
-                    
-                    let dustHTML = '<div class="dust-container">';
-                    const particleCount = 24; 
-                    for(let j=0; j<particleCount; j++) {
-                        const angle = (j / particleCount) * Math.PI * 2;
-                        const randomForce = Math.random() * 0.4 + 0.6; 
-                        // 확산 범위 1배로 축소 (90px)
-                        const dx = Math.cos(angle) * 90 * randomForce + 'px'; 
-                        const dy = Math.sin(angle) * 40 * randomForce - 10 + 'px'; 
-                        
-                        const size = (Math.random() * 6 + 8) + 'px'; 
+            phrases.forEach(p => {
+                const block = document.createElement('div');
+                block.className = 'phrase-block';
+                block.innerHTML = `
+                    <div class="category">${p.cat}</div>
+                    <div class="japanese">${p.jp}</div>
+                    <div class="reading">${p.rd}</div>
+                    <div class="meaning">${p.mn}</div>
+                `;
+                studyView.appendChild(block);
+            });
 
-                        dustHTML += `<div class="dust-particle" style="--dx:${dx}; --dy:${dy}; width:${size}; height:${size}; left:50%; animation-delay:inherit; margin-left:-${parseInt(size)/2}px;"></div>`;
-                    }
-                    dustHTML += '</div>';
-
-                    block.innerHTML = `
-                        <div class="card-inner" onclick="flipCard(this, '${p.jp.replace(/'/g, "\\'")}')">
-                            <div class="card-front">
-                                <div class="category">${p.cat}</div>
-                                <div class="meaning">${p.mn}</div>
-                                <div class="reading">${p.rd}</div>
-                                ${dustHTML}
-                            </div>
-                            <div class="card-back">
-                                <div class="japanese-back">${p.jp}</div>
-                            </div>
-                        </div>
-                    `;
-                    section.appendChild(block);
-                });
-                studyView.appendChild(section);
-            }
-
-            const observer = new IntersectionObserver((entries) => {
+            studyObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.querySelectorAll('.phrase-block').forEach(b => {
-                            b.classList.remove('active', 'flipped');
-                            void b.offsetWidth;
-                            b.classList.add('active');
-                        });
+                        entry.target.classList.add('active');
+                    } else {
+                        entry.target.classList.remove('active');
                     }
                 });
-            }, { threshold: 0.4 });
+            }, { threshold: 0.6 });
 
-            document.querySelectorAll('.study-section').forEach(s => observer.observe(s));
+            document.querySelectorAll('.phrase-block').forEach(b => studyObserver.observe(b));
         }
 
-        function flipCard(cardInner, text) {
-            const block = cardInner.parentElement;
-            const isFlipped = block.classList.toggle('flipped');
-            if (isFlipped) {
-                speakJapanese(text);
-            }
-        }
-
-        window.onload = renderStudyMode;
+        window.onload = enableStudyMode;
     </script>
 </body>
 </html>
