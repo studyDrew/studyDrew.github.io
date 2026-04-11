@@ -3,266 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese Pro - BIG FONT EDITION</title>
+    <title>Business Japanese Impact - Fast Edition</title>
     <style>
-        /* --- 공통 스타일 --- */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            background-color: #000; color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro KR", sans-serif;
-            line-height: 1.5; user-select: none; overflow-x: hidden;
-        }
+        body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; }
 
-        /* --- 네비게이션 --- */
+        /* 네비게이션 */
         .apple-nav {
             position: fixed; top: 0; width: 100%; height: 60px;
-            background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px);
             z-index: 9999; border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-        }
-        .nav-list { display: flex; justify-content: space-around; align-items: center; list-style: none; height: 100%; padding: 0 10px; }
-        .nav-link { color: #f5f5f7; font-size: 14px; opacity: 0.5; text-decoration: none; cursor: pointer; transition: 0.3s; }
-        .nav-link.active { opacity: 1; font-weight: 600; color: #6200ee; text-shadow: 0 0 8px #6200ee; }
-        .nav-mode { 
-            color: #fff; opacity: 0.5; font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.3); 
-            padding: 4px 12px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.2s;
-        }
-        .nav-mode.active { opacity: 1; background-color: #6200ee; color: #fff; border-color: #6200ee; box-shadow: 0 0 10px rgba(98, 0, 238, 0.4); }
-
-        /* --- 컨테이너 --- */
-        .container { padding-top: 60px; max-width: 800px; margin: 0 auto; min-height: 100vh; }
-        
-        /* --- 리스트 모드 스타일 --- */
-        .list-container { margin-top: 20px; border-top: 0.5px solid #2c2c2e; display: none; }
-        .list-item-wrapper { position: relative; background: #6200ee; overflow: hidden; border-bottom: 0.5px solid #2c2c2e; }
-        .list-item-content {
-            position: relative; width: 100%; padding: 22px 20px; background-color: #000; z-index: 2;
-            cursor: grab; transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .category { font-size: 10px; color: #03dac6; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; }
-        .japanese { font-size: 19px; font-weight: 500; color: #fff; }
-        .reading { font-size: 13px; color: #86868b; }
-        .meaning { font-size: 16px; color: #f5f5f7; margin-top: 6px; border-top: 0.5px solid #1c1c1e; padding-top: 6px; }
-        .delete-label {
-            position: absolute; right: 0; top: 0; height: 100%; width: 80px;
-            background: transparent; color: #fff; display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 900; z-index: 1;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        .singularity-active { animation: singularityShrinkWarp 0.2s ease-in forwards; pointer-events: none; }
-        @keyframes singularityShrinkWarp { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
-
-        /* --- ⚡ 학습모드 --- */
         .study-container { 
-            display: none; height: calc(100vh - 60px); overflow-y: scroll; 
-            scroll-snap-type: y mandatory; scrollbar-width: none; 
+            height: 100vh; overflow-y: scroll; 
+            scroll-snap-type: y mandatory; scrollbar-width: none;
         }
         .study-container::-webkit-scrollbar { display: none; }
 
-        @property --study-scale {
-          syntax: '<number>';
-          inherits: true;
-          initial-value: 2.0;
-        }
-
         .phrase-block {
-            height: calc(100vh - 60px); display: flex; flex-direction: column; justify-content: center; align-items: center;
-            text-align: center; padding: 0 24px; scroll-snap-align: start;
-            opacity: 0.05; transform: scale(0.9);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-            --study-scale: 2.0;
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            scroll-snap-align: start; position: relative; overflow: hidden;
         }
 
-        @keyframes fontGrow {
-            from { --study-scale: 2.0; }
-            to { --study-scale: 3.2; }
+        .category-tag { 
+            position: absolute; top: 80px; font-size: 16px; color: #6200ee;
+            font-weight: 900; letter-spacing: 5px; opacity: 0;
+            transform: translateY(-500px) scale(2);
         }
 
-        .phrase-block.active { 
-            opacity: 1; 
-            transform: scale(1); 
-            animation: fontGrow 0.8s ease-out forwards;
-        }
+        .sentence-area { display: flex; flex-direction: column; gap: 50px; width: 100%; }
+        .chunk-pair { display: flex; flex-direction: column; align-items: center; gap: 10px; position: relative; }
 
-        .phrase-block .japanese { 
-            font-size: calc(1.05rem * var(--study-scale)); 
-            line-height: 1.25; font-weight: 700; margin-bottom: 12px;
-            width: 100%; max-width: 90vw;
-            word-break: break-all; overflow-wrap: break-word;
-        }
-        .phrase-block .meaning { 
-            font-size: calc(0.85rem * var(--study-scale)); 
-            color: #03dac6; border-top: 1px solid #333; padding-top: 15px; 
-            font-weight: 600; width: 100%; max-width: 90vw;
+        /* --- 강력한 Impact Drop 스타일 --- */
+        .chunk {
+            opacity: 0; font-size: 42px; font-weight: 800; text-align: center;
+            transform: translateY(-500px) scale(2);
             word-break: keep-all;
         }
-        .phrase-block .reading { font-size: 1.1rem; color: #86868b; margin-bottom: 20px; }
-        .phrase-block .category { font-size: 12px; color: #6200ee; margin-bottom: 20px; letter-spacing: 2px; }
+        .chunk.ko { color: #03dac6; font-size: 32px; font-weight: 700; border-top: 2px solid #333; padding-top: 10px; }
 
-        .hero-section { padding: 40px 20px 20px; text-align: center; }
-        .hero-section h1 { font-size: 32px; font-weight: 700; }
+        /* --- 애니메이션 트리거 (1.5배 가속 딜레이 적용) --- */
+        .phrase-block.active .category-tag,
+        .phrase-block.active .chunk {
+            animation: jobsDropImpact 0.5s cubic-bezier(0.2, 0, 0.4, 1.4) forwards;
+        }
+
+        .phrase-block.active .category-tag { animation-delay: 0s; }
+        .phrase-block.active .chunk-pair:nth-child(1) .chunk { animation-delay: 0.05s; }
+        .phrase-block.active .chunk-pair:nth-child(2) .chunk { animation-delay: 0.75s; }
+        .phrase-block.active .chunk-pair:nth-child(3) .chunk { animation-delay: 1.45s; }
+
+        @keyframes jobsDropImpact {
+            0% { opacity: 0; transform: translateY(-500px) scale(2); }
+            60% { opacity: 1; transform: translateY(0) scale(1); }
+            80% { transform: translateY(-15px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* 가속된 화면 흔들림 싱크 */
+        .phrase-block.active .chunk-pair:nth-child(1) { animation: superShake 0.15s 0.35s 2; }
+        .phrase-block.active .chunk-pair:nth-child(2) { animation: superShake 0.15s 1.05s 2; }
+        .phrase-block.active .chunk-pair:nth-child(3) { animation: superShake 0.15s 1.75s 2; }
+
+        @keyframes superShake { 
+            0% { transform: translateY(0); } 
+            50% { transform: translateY(10px); } 
+            100% { transform: translateY(0); } 
+        }
+
+        /* 진한 먼지 효과 가속 싱크 */
+        .dust-container { position: absolute; width: 100%; height: 20px; bottom: 10%; pointer-events: none; }
+        .dust-particle {
+            position: absolute; left: 50%; 
+            background: rgba(220, 220, 220, 0.7); 
+            border-radius: 50%; filter: blur(8px); opacity: 0;
+        }
+
+        .phrase-block.active .chunk-pair:nth-child(1) .dust-particle { animation: dustBurstImpact 1s 0.35s ease-out forwards; }
+        .phrase-block.active .chunk-pair:nth-child(2) .dust-particle { animation: dustBurstImpact 1s 1.05s ease-out forwards; }
+        .phrase-block.active .chunk-pair:nth-child(3) .dust-particle { animation: dustBurstImpact 1s 1.75s ease-out forwards; }
+
+        @keyframes dustBurstImpact {
+            0% { opacity: 0; transform: translate(0, 0) scale(1); }
+            20% { opacity: 0.9; }
+            100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(6); }
+        }
     </style>
 </head>
 <body>
 
     <nav class="apple-nav">
-        <ul class="nav-list">
-            <li><span id="btn-study" class="nav-mode" onclick="enableStudyMode()">학습모드</span></li>
-            <li><a id="link-all" class="nav-link" onclick="filterList('all', this)">전부</a></li>
-            <li><a class="nav-link" onclick="filterList('jp', this)">일본어</a></li>
-            <li><a class="nav-link" onclick="filterList('ko', this)">한국어</a></li>
-        </ul>
+        <div style="font-weight: 700; letter-spacing: 2px;">BUSINESS JAPANESE IMPACT</div>
     </nav>
 
-    <div class="container">
-        <section class="hero-section" id="hero" style="display:none;">
-            <h1 id="hero-title">Phrases</h1>
-            <p id="hero-desc">비즈니스 일본어 마스터를 위한 싱귤래리티.</p>
-        </section>
-        <div id="list-view" class="list-container"></div>
-        <div id="study-view" class="study-container"></div>
-    </div>
+    <div id="study-view" class="study-container"></div>
 
     <script>
-        let phrases = [
-            { id: 1, cat: "첫 인사", jp: "初めてご挨拶差し上げます。", rd: "하지메테 고아이사츠 사시아게마스", mn: "처음 인사드립니다" },
-            { id: 2, cat: "첫 인사", jp: "初めてお会いいたします。", rd: "하지메테 오아이 이타시마스", mn: "처음 뵙겠습니다" },
-            { id: 3, cat: "첫 인사", jp: "初めてご連絡差し上げます。", rd: "하지메테 고렌라쿠 사시아게마스", mn: "처음 연락드립니다" },
-            { id: 4, cat: "첫 인사", jp: "初めてメール差し上げます。", rd: "하지메테 메-루 사시아게마스", mn: "처음 메일드립니다" },
-            { id: 5, cat: "첫 인사", jp: "メールではご挨拶いたしましたが、初めてお会いいたします。", rd: "메-루데와 고아이사츠 이타시마시타가, 하지메테 오아이 이타시마스", mn: "메일로는 인사드렸습니다만, 처음 뵙겠습니다" },
-            { id: 6, cat: "첫 인사", jp: "初めまして。どうぞよろしくお願いします。", rd: "하지메마시테. 도-조 요로시쿠 오네가이시마스", mn: "처음 뵙겠습니다. 잘 부탁드립니다" },
-            { id: 7, cat: "자기 소개", jp: "私、キムミナと申します。", rd: "와타쿠시, 키무미나토 모-시마스", mn: "저는 김미나라고 합니다" },
-            { id: 8, cat: "자기 소개", jp: "鈴木と申します。", rd: "스즈키토 모-시마스", mn: "스즈키라고 합니다" },
-            { id: 9, cat: "자기 소개", jp: "マーケティング部の渡辺勇樹と申します。", rd: "마-케팅구부노 와타나베 유-키토 모-시마스", mn: "마케팅부 와타나베 유키라고 합니다" },
-            { id: 10, cat: "자기 소개", jp: "広報担当の太田順と申します。", rd: "코-호-탄토-노 오오타 쥬토 모-시마스", mn: "홍보 담당인 오타 준이라고 합니다" },
-            { id: 11, cat: "자기 소개", jp: "初めまして。営業部のイ・ヒョンシクと申します。", rd: "하지메마시테. 에-교-부노 이횬시쿠토 모-시마스", mn: "처음 뵙겠습니다. 영업부의 이형식이라고 합니다" },
-            { id: 12, cat: "자기 소개", jp: "初めまして。課長の鈴木と申します。", rd: "하지메마시테. 카쵸-노 스즈키토 모-시마스", mn: "처음 뵙겠습니다. 과장인 스즈키라고 합니다" },
-            { id: 13, cat: "안내 및 환대", jp: "どうぞ、こちらへ。", rd: "도-조, 코치라에", mn: "어서 이쪽으로 오세요" },
-            { id: 14, cat: "안내 및 환대", jp: "どうぞ、お入りください。", rd: "도-조, 오하이리 쿠다사이", mn: "어서 들어오세요" },
-            { id: 15, cat: "안내 및 환대", jp: "どうぞ、お召し上がりください。", rd: "도-조, 오메시아가리 쿠다사이", mn: "어서 드세요" },
-            { id: 16, cat: "안내 및 환대", jp: "こちら、どうぞ。", rd: "코치라, 도-조", mn: "이거 받으세요" },
-            { id: 17, cat: "안내 및 환대", jp: "つまらないものですが、こちら、どうぞ。", rd: "츠마라나이 모노데스가, 코치라 도-조", mn: "변변찮습니다만, 이거 받으세요" },
-            { id: 18, cat: "안내 및 환대", jp: "わざわざ、ありがとうございます。", rd: "와자와자, 아리가토-고자이마스", mn: "일부러 감사합니다" },
-            { id: 19, cat: "소개 및 제시", jp: "こちらは部長の松本です。", rd: "코치라와 부쵸-노 마츠모토데스", mn: "이쪽은 부장인 마쓰모토입니다" },
-            { id: 20, cat: "소개 및 제시", jp: "こちらは、韓国からお越しのパク・ジンさんでいらっしゃいます。", rd: "코치라와, 칸코쿠카라 오코시노 파쿠진산데 이랏샤이마스", mn: "이쪽은 한국에서 오신 박진 씨이십니다" },
-            { id: 21, cat: "소개 및 제시", jp: "こちらは、新商品でございます。", rd: "코치라와, 신쇼-힌데 고자이마스", mn: "이쪽은 신상품입니다" },
-            { id: 22, cat: "소개 및 제시", jp: "こちらが契約書でございます。", rd: "코치라가 케-야쿠쇼데 고자이마스", mn: "이쪽이 계약서입니다" },
-            { id: 23, cat: "소개 및 제시", jp: "佐藤さん、こちらは部長の松本です。", rd: "사토-산, 코치라와 부쵸-노 마츠모토데스", mn: "사토 씨 이쪽은 부장인 마쓰모토입니다" },
-            { id: 24, cat: "소개 및 제시", jp: "初めまして。部長の松本です。", rd: "하지메마시테. 부쵸-노 마츠모토데스", mn: "처음 뵙겠습니다. 부장인 마쓰모토입니다" },
-            { id: 25, cat: "소개 및 제시", jp: "初めまして。日本物産の佐藤です。", rd: "하지메마시테. 니혼붓산노 사토-데스", mn: "처음 뵙겠습니다. 일본물산의 사토입니다" },
-            { id: 26, cat: "감사 및 화답", jp: "こちらこそ、よろしくお願いします。", rd: "코치라코소, 요로시쿠 오네가이시마스", mn: "저야말로 잘 부탁드립니다" },
-            { id: 27, cat: "감사 및 화답", jp: "こちらこそ、いつもお世話になっております。", rd: "코치라코소, 이츠모 오세와니 낫테 오리마스", mn: "저야말로 항상 신세 지고 있습니다" },
-            { id: 28, cat: "감사 및 화답", jp: "こちらこそ、おかげさまで売上げが順調です。", rd: "코치라코소, 오카게사마데 우리아게 쥰쵸-데스", mn: "저야말로 덕분에 매출이 순조롭습니다" },
-            { id: 29, cat: "감사 및 화답", jp: "こちらこそ、今後ともご協力のほどお願いします。", rd: "코치라코소, 콘고토모 고교-료쿠노 호도 오네가이시마스", mn: "저야말로 앞으로도 협조를 부탁드립니다" },
-            { id: 30, cat: "감사 및 화답", jp: "御社が協力してくださったおかげで、プロジェクトが成功しました。", rd: "온샤가 쿄-료쿠시테 쿠다삿타 오카게데, 푸로제쿠토가 세-코-시마시타", mn: "귀사가 협력해 주신 덕분에 프로젝트가 성공했습니다" },
-            { id: 31, cat: "감사 및 화답", jp: "こちらこそ貴重な機会に参加させていただきありがとうございました。", rd: "코치라코소 키쵸-나 키카이니 산카사세테이타다키 아리가토-고자이마시타", mn: "저야말로 귀중한 기회에 참가하게 해 주셔서 감사합니다" }
+        const phrasesData = [
+            { cat: "첫 인사", jp: ["初めて", "ご挨拶", "差し上げます。"], mn: ["처음", "인사", "드립니다"] },
+            { cat: "첫 인사", jp: ["初めて", "お会いいたします。"], mn: ["처음", "뵙겠습니다"] },
+            { cat: "첫 인사", jp: ["初めて", "ご連絡", "差し上げます。"], mn: ["처음", "연락", "드립니다"] },
+            { cat: "첫 인사", jp: ["初めて", "メール", "差し上げます。"], mn: ["처음", "메일", "드립니다"] },
+            { cat: "첫 인사", jp: ["メールでは挨拶しましたが", "初めて", "お会いいたします。"], mn: ["메일로는 인사드렸습니다만", "처음", "뵙겠습니다"] },
+            { cat: "첫 인사", jp: ["初めまして。", "どうぞ", "よろしくお願いします。"], mn: ["처음 뵙겠습니다.", "부디", "잘 부탁드립니다"] },
+            { cat: "자기 소개", jp: ["私、", "キムミナと", "申します。"], mn: ["저는", "김미나라고", "합니다"] },
+            { cat: "자기 소개", jp: ["鈴木と", "申します。"], mn: ["스즈키라고", "합니다"] },
+            { cat: "자기 소개", jp: ["マーケティング部の", "渡辺勇樹과", "申합니다."], mn: ["마케팅부", "와타나베 유키라고", "합니다"] },
+            { cat: "자기 소개", jp: ["広報担当의", "太田順と", "申합니다."], mn: ["홍보 담당", "오타 준이라고", "합니다"] },
+            { cat: "자기 소개", jp: ["営業部の", "イ・ヒョン시쿠와", "申합니다."], mn: ["영업부의", "이형식이라고", "합니다"] },
+            { cat: "자기 소개", jp: ["課長の", "鈴木과", "申합니다."], mn: ["과장인", "스즈키라고", "합니다"] },
+            { cat: "안내 및 환대", jp: ["どうぞ、", "こちらへ。"], mn: ["어서", "이쪽으로 오세요"] },
+            { cat: "안내 및 환대", jp: ["どうぞ、", "お入りください。"], mn: ["어서", "들어오세요"] },
+            { cat: "안내 및 환대", jp: ["どうぞ、", "お召し上がりください。"], mn: ["어서", "드세요"] },
+            { cat: "안내 및 환대", jp: ["こちら、", "どうぞ。"], mn: ["이거", "받으세요"] },
+            { cat: "안내 및 환대", jp: ["つまらないものですが", "こちら、", "どうぞ。"], mn: ["변변찮습니다만", "이거", "받으세요"] },
+            { cat: "안내 및 환대", jp: ["わざわざ、", "ありがとうございます。"], mn: ["일부러", "감사합니다"] },
+            { cat: "소개 및 제시", jp: ["こちらは", "部長の", "松本です。"], mn: ["이쪽은", "부장인", "마쓰모토입니다"] },
+            { cat: "소개 및 제시", jp: ["韓国からお越しの", "パク・ジンさんで", "いらっしゃいます。"], mn: ["한국에서 오신", "박진 씨", "이십니다"] },
+            { cat: "소개 및 제시", jp: ["こちらは、", "新商品で", "ございます。"], mn: ["이쪽은", "신상품", "입니다"] },
+            { cat: "소개 및 제시", jp: ["こちらが", "契約書で", "ございます。"], mn: ["이쪽이", "계약서", "입니다"] },
+            { cat: "소개 및 제시", jp: ["佐藤さん、こちら", "部長の", "松本です。"], mn: ["사토 씨 이쪽은", "부장인", "마쓰모토입니다"] },
+            { cat: "소개 및 제시", jp: ["初めまして。", "部長の", "松本です. "], mn: ["처음 뵙겠습니다.", "부장인", "마쓰모토입니다"] },
+            { cat: "소개 및 제시", jp: ["初めまして。", "日本物産の", "佐藤です。"], mn: ["처음 뵙겠습니다.", "일본물산의", "사토입니다"] },
+            { cat: "감사 및 화답", jp: ["こちらこそ、", "よろしくお願いします。"], mn: ["저야말로", "잘 부탁드립니다"] },
+            { cat: "감사 및 화답", jp: ["こちらこそ、いつも", "お世話に", "なっております。"], mn: ["저야말로 항상", "신세 지고", "있습니다"] },
+            { cat: "감사 및 화답", jp: ["おかげさまで", "売上げが", "順調です。"], mn: ["덕분에", "매출이", "순조롭습니다"] },
+            { cat: "감사 및 화답", jp: ["今後とも", "ご協力의 호도", "お願いします。"], mn: ["앞으로도", "협조를", "부탁드립니다"] },
+            { cat: "감사 및 화답", jp: ["御社が協力した", "おかげで", "成功しました。"], mn: ["귀사가 협력한", "덕분에", "성공했습니다"] },
+            { cat: "감사 및 화답", jp: ["貴重な機会に", "参加させて", "いただきました。"], mn: ["귀중한 기회에", "참가하게", "해주셨습니다"] }
         ];
 
-        let currentMode = 'all', isWarping = false, studyObserver = null;
-
-        function enableStudyMode() {
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            document.getElementById('btn-study').classList.add('active');
-            document.getElementById('hero').style.display = 'none';
-            document.getElementById('list-view').style.display = 'none';
-            document.getElementById('study-view').style.display = 'block';
-            renderStudyMode();
+        function createDust(parent) {
+            const container = document.createElement('div');
+            container.className = 'dust-container';
+            for(let i=0; i<20; i++) {
+                const angle = (i / 20) * Math.PI * 2;
+                const dist = 250 + Math.random() * 200; 
+                const dx = Math.cos(angle) * dist + 'px';
+                const dy = (Math.sin(angle) * 100 + 50) + 'px'; 
+                const size = Math.random() * 25 + 10 + 'px';
+                const d = document.createElement('div');
+                d.className = 'dust-particle';
+                d.style.width = size; d.style.height = size;
+                d.style.setProperty('--dx', dx);
+                d.style.setProperty('--dy', dy);
+                container.appendChild(d);
+            }
+            parent.appendChild(container);
         }
 
-        function filterList(type, element) {
-            document.getElementById('btn-study').classList.remove('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            element.classList.add('active');
-            document.getElementById('hero').style.display = 'block';
-            document.getElementById('study-view').style.display = 'none';
-            document.getElementById('list-view').style.display = 'block';
-            renderList(type);
-        }
-
-        function renderList(type) {
-            currentMode = type;
-            const listView = document.getElementById('list-view');
-            listView.innerHTML = '';
-            phrases.forEach(p => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'list-item-wrapper';
-                wrapper.setAttribute('data-id', p.id);
-                wrapper.innerHTML = `
-                    <div class="list-item-content">
-                        <div class="category">${p.cat}</div>
-                        ${(type==='all' || type==='jp') ? `<div class="japanese">${p.jp}</div><div class="reading">${p.rd}</div>` : ''}
-                        ${(type==='all' || type==='ko') ? `<div class="meaning">${p.mn}</div>` : ''}
-                    </div>
-                    <div class="delete-label" onclick="initSingularity(${p.id})">WIPE</div>
-                `;
-                setupSwipe(wrapper, p.id);
-                listView.appendChild(wrapper);
-            });
-        }
-
-        function setupSwipe(wrapper, id) {
-            const content = wrapper.querySelector('.list-item-content');
-            let startX = 0, currentDiff = 0, isDragging = false;
-            const start = (e) => {
-                if (isWarping) return;
-                startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-                content.style.transition = 'none';
-                isDragging = true;
-            };
-            const move = (e) => {
-                if (!isDragging) return;
-                const x = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-                currentDiff = startX - x;
-                if (currentDiff > 0) content.style.transform = `translateX(-${currentDiff}px)`;
-            };
-            const end = () => {
-                if (!isDragging) return;
-                isDragging = false;
-                content.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                if (currentDiff > window.innerWidth * 0.5) initSingularity(id);
-                else if (currentDiff > 70) content.style.transform = 'translateX(-80px)';
-                else content.style.transform = 'translateX(0px)';
-            };
-            content.addEventListener('mousedown', start);
-            window.addEventListener('mousemove', move);
-            window.addEventListener('mouseup', end);
-            content.addEventListener('touchstart', start);
-            content.addEventListener('touchmove', move);
-            content.addEventListener('touchend', end);
-        }
-
-        function initSingularity(id) {
-            if (isWarping) return;
-            const wrapper = document.querySelector(`.list-item-wrapper[data-id="${id}"]`);
-            if(!wrapper) return;
-            isWarping = true;
-            wrapper.querySelector('.list-item-content').classList.add('singularity-active');
-            setTimeout(() => {
-                phrases = phrases.filter(p => p.id !== id);
-                renderList(currentMode);
-                isWarping = false;
-            }, 220);
-        }
-
-        function renderStudyMode() {
-            const studyView = document.getElementById('study-view');
-            studyView.innerHTML = '';
-            if (studyObserver) studyObserver.disconnect();
-
-            phrases.forEach(p => {
+        function render() {
+            const view = document.getElementById('study-view');
+            phrasesData.forEach(p => {
                 const block = document.createElement('div');
                 block.className = 'phrase-block';
-                block.innerHTML = `
-                    <div class="category">${p.cat}</div>
-                    <div class="japanese">${p.jp}</div>
-                    <div class="reading">${p.rd}</div>
-                    <div class="meaning">${p.mn}</div>
-                `;
-                studyView.appendChild(block);
+                
+                const cat = document.createElement('div');
+                cat.className = 'category-tag';
+                cat.innerText = p.cat;
+                block.appendChild(cat);
+
+                const area = document.createElement('div');
+                area.className = 'sentence-area';
+
+                const len = Math.max(p.jp.length, p.mn.length);
+                for(let i=0; i<len; i++) {
+                    const pair = document.createElement('div');
+                    pair.className = 'chunk-pair';
+                    
+                    if(p.jp[i]) {
+                        const jp = document.createElement('div');
+                        jp.className = 'chunk jp';
+                        jp.innerText = p.jp[i];
+                        pair.appendChild(jp);
+                    }
+                    if(p.mn[i]) {
+                        const mn = document.createElement('div');
+                        mn.className = 'chunk ko';
+                        mn.innerText = p.mn[i];
+                        pair.appendChild(mn);
+                    }
+                    createDust(pair);
+                    area.appendChild(pair);
+                }
+                block.appendChild(area);
+                view.appendChild(block);
             });
 
-            studyObserver = new IntersectionObserver((entries) => {
+            const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
+                        entry.target.classList.remove('active');
+                        void entry.target.offsetWidth; 
                         entry.target.classList.add('active');
                     } else {
                         entry.target.classList.remove('active');
@@ -270,10 +204,10 @@
                 });
             }, { threshold: 0.6 });
 
-            document.querySelectorAll('.phrase-block').forEach(b => studyObserver.observe(b));
+            document.querySelectorAll('.phrase-block').forEach(b => observer.observe(b));
         }
 
-        window.onload = enableStudyMode;
+        window.onload = render;
     </script>
 </body>
 </html>
