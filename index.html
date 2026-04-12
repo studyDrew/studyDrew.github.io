@@ -57,10 +57,10 @@
         .mode-horizontal .sentence-area { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; }
         .mode-vertical .sentence-area { display: flex; flex-direction: column; align-items: center; gap: 35px; width: 100%; }
 
-        .chunk-pair { display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; }
+        .chunk-pair { display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; opacity: 0; }
 
         /* 글자 스타일 */
-        .chunk { opacity: 0; text-align: center; transform: translateY(-500px) scale(2); word-break: keep-all; }
+        .chunk { text-align: center; transform: translateY(-500px) scale(2); word-break: keep-all; opacity: 0; }
         .chunk.jp { font-size: 36px; font-weight: 800; color: #fff; }
         .chunk.rd { font-size: 16px; font-weight: 500; color: #888; margin-bottom: 5px; } 
         .chunk.ko { color: #03dac6; font-size: 24px; font-weight: 700; border-top: 2px solid #333; padding-top: 8px; }
@@ -82,23 +82,43 @@
             80% { transform: translateY(-15px) scale(1.02); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes superShake { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+        @keyframes superShake { 
+            0%, 100% { transform: translateY(0); opacity: 1; } 
+            50% { transform: translateY(10px); opacity: 1; } 
+        }
 
-        /* 딜레이 제어 */
-        body.show-all .phrase-block.active .chunk-pair:nth-child(1) .chunk, body.show-all .phrase-block.active .chunk-pair:nth-child(1),
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(1) .chunk, body.show-jp .phrase-block.active .chunk-pair:nth-child(1) { animation-delay: 0.1s; }
-        body.show-all .phrase-block.active .chunk-pair:nth-child(2) .chunk, body.show-all .phrase-block.active .chunk-pair:nth-child(2),
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(2) .chunk, body.show-jp .phrase-block.active .chunk-pair:nth-child(2) { animation-delay: 0.8s; }
-        body.show-all .phrase-block.active .chunk-pair:nth-child(3) .chunk, body.show-all .phrase-block.active .chunk-pair:nth-child(3),
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(3) .chunk, body.show-jp .phrase-block.active .chunk-pair:nth-child(3) { animation-delay: 1.5s; }
+        /* [수정] 순차적 딜레이 제어 (모두표시 & 일본어만) */
+        body.show-all .phrase-block.active .chunk-pair:nth-child(1),
+        body.show-all .phrase-block.active .chunk-pair:nth-child(1) .chunk,
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(1),
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(1) .chunk { animation-delay: 0.1s; }
 
-        /* 한국어 모드 동시 드롭 */
-        body.show-ko .phrase-block.active .chunk, body.show-ko .phrase-block.active .chunk-pair { animation-delay: 0.2s !important; }
+        body.show-all .phrase-block.active .chunk-pair:nth-child(2),
+        body.show-all .phrase-block.active .chunk-pair:nth-child(2) .chunk,
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(2),
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(2) .chunk { animation-delay: 0.7s; }
+
+        body.show-all .phrase-block.active .chunk-pair:nth-child(3),
+        body.show-all .phrase-block.active .chunk-pair:nth-child(3) .chunk,
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(3),
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(3) .chunk { animation-delay: 1.3s; }
+
+        /* [수정] 한국어 모드: 모든 청크 동시 드롭 유지 */
+        body.show-ko .phrase-block.active .chunk-pair,
+        body.show-ko .phrase-block.active .chunk { animation-delay: 0.2s !important; }
 
         /* 먼지 효과 */
         .dust-container { position: absolute; width: 100px; height: 20px; bottom: 0; pointer-events: none; }
         .dust-particle { position: absolute; left: 50%; background: rgba(220, 220, 220, 0.7); border-radius: 50%; filter: blur(6px); opacity: 0; }
         .phrase-block.active .dust-particle { animation: dustBurstImpact 0.8s ease-out forwards; }
+
+        /* 먼지 효과 딜레이 연동 */
+        body.show-all .phrase-block.active .chunk-pair:nth-child(1) .dust-particle,
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(1) .dust-particle { animation-delay: 0.1s; }
+        body.show-all .phrase-block.active .chunk-pair:nth-child(2) .dust-particle,
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(2) .dust-particle { animation-delay: 0.7s; }
+        body.show-all .phrase-block.active .chunk-pair:nth-child(3) .dust-particle,
+        body.show-jp .phrase-block.active .chunk-pair:nth-child(3) .dust-particle { animation-delay: 1.3s; }
         body.show-ko .phrase-block.active .dust-particle { animation-delay: 0.2s !important; }
 
         @keyframes dustBurstImpact { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(6); } }
@@ -123,40 +143,34 @@
     <div id="study-view" class="study-container mode-horizontal"></div>
 
     <script>
-        // 위치 기억 변수
         let currentCardIndex = 0;
 
         const phrasesData = [
-            // 1. 첫 인사
             { id: 1, cat: "첫 인사", jp: ["初めて", "ご挨拶", "差し上げます。"], rd: ["하지메테", "고아이사츠", "사시아게마스"], mn: ["처음", "인사", "드립니다"] },
             { id: 2, cat: "첫 인사", jp: ["初めて", "お会い", "いたします。"], rd: ["하지메테", "오아이", "이타시마스"], mn: ["처음", "뵙겠", "습니다"] },
             { id: 3, cat: "첫 인사", jp: ["初めて", "ご連絡", "差し上げます。"], rd: ["하지메테", "고렌라쿠", "사시아게마스"], mn: ["처음", "연락", "드립니다"] },
             { id: 4, cat: "첫 인사", jp: ["初めて", "メール", "差し上げます。"], rd: ["하지메테", "메-루", "사시아게마스"], mn: ["처음", "메일", "드립니다"] },
             { id: 5, cat: "첫 인사", jp: ["メールでは", "ご挨拶しましたが", "初めてお会いします"], rd: ["메-루데와", "고아이사츠 시마시타가", "하지메테 오아이시마스"], mn: ["메일로는", "인사드렸습니다만", "처음 뵙겠습니다"] },
             { id: 6, cat: "첫 인사", jp: ["初めまして", "どうぞよろしく", "お願いします。"], rd: ["하지메마시테", "도오조 요로시쿠", "오네가이시마스"], mn: ["처음 뵙겠습니다", "잘", "부탁드립니다"] },
-            // 2. 자기 소개
-            { id: 7, cat: "자기 소개", jp: ["私、", "キムミ나と", "申します。"], rd: ["와타쿠시", "키무미나토", "모오시마스"], mn: ["저는", "김미나라고", "합니다"] },
-            { id: 8, cat: "자기 소개", jp: ["鈴木と", "申합니다。", ""], rd: ["스즈키토", "모오시마스", ""], mn: ["스즈키라고", "합니다", ""] },
-            { id: 9, cat: "자기 소개", jp: ["マーケティング部の", "渡辺勇樹と", "申합니다。"], rd: ["마-케팅구부노", "와타나베 유우키토", "모오시마스"], mn: ["마케팅부", "와타나베 유키라고", "합니다"] },
+            { id: 7, cat: "자기 소개", jp: ["私、", "キムミナと", "申します。"], rd: ["와타쿠시", "키무미나토", "모오시마스"], mn: ["저는", "김미나라고", "합니다"] },
+            { id: 8, cat: "자기 소개", jp: ["鈴木と", "申します。", ""], rd: ["스즈키토", "모오시마스", ""], mn: ["스즈키라고", "합니다", ""] },
+            { id: 9, cat: "자기 소개", jp: ["マーケティング部の", "渡辺勇樹と", "申します。"], rd: ["마-케팅구부노", "와타나베 유우키토", "모오시마스"], mn: ["마케팅부", "와타나베 유키라고", "합니다"] },
             { id: 10, cat: "자기 소개", jp: ["広報担当の", "太田順と", "申합니다。"], rd: ["코오호오탄토오노", "오오타 쥰토", "모오시마스"], mn: ["홍보 담당인", "오타 준이라고", "합니다"] },
-            { id: 11, cat: "자기 소개", jp: ["初めまして", "営業部の", "イヒョンシクと申します"], rd: ["하지메마시테", "에이교오부노", "이횬시쿠토 모오시마스"], mn: ["처음 뵙겠습니다", "영업부의", "이형식이라고 합니다"] },
-            { id: 12, cat: "자기 소개", jp: ["初めまして", "課長の", "鈴木과 申합니다。"], rd: ["하지메마시테", "카쵸오노", "스즈키토 모오시마스"], mn: ["처음 뵙겠습니다", "과장인", "스즈키라고 합니다"] },
-            // 3. 안내 및 환대
+            { id: 11, cat: "자기 소개", jp: ["初めまして", "営業部の", "이횬시쿠토 모오시마스"], rd: ["하지메마시테", "에이교오부노", "이횬시쿠토 모오시마스"], mn: ["처음 뵙겠습니다", "영업부의", "이형식이라고 합니다"] },
+            { id: 12, cat: "자기 소개", jp: ["初めまして", "課長の", "鈴木と 모오시마스"], rd: ["하지메마시테", "카쵸오노", "스즈키토 모오시마스"], mn: ["처음 뵙겠습니다", "과장인", "스즈키라고 합니다"] },
             { id: 13, cat: "안내 및 환대", jp: ["どうぞ、", "こちらへ。", ""], rd: ["도오조", "코치라에", ""], mn: ["어서", "이쪽으로", "오세요"] },
             { id: 14, cat: "안내 및 환대", jp: ["どうぞ、", "お入り", "ください。"], rd: ["도오조", "오하이리", "쿠다사이"], mn: ["어서", "들어", "오세요"] },
             { id: 15, cat: "안내 및 환대", jp: ["どうぞ、", "お召し上がり", "ください。"], rd: ["도오조", "오메시아가리", "쿠다사이"], mn: ["어서", "드세요", ""] },
             { id: 16, cat: "안내 및 환대", jp: ["こちら、", "どうぞ。", ""], rd: ["코치라", "도오조", ""], mn: ["이거", "받으세요", ""] },
             { id: 17, cat: "안내 및 환대", jp: ["つまらない", "ものですが", "こちらどうぞ"], rd: ["츠마라나이", "모노데스가", "코치라 도오조"], mn: ["변변찮습니다만", "이거", "받으세요"] },
             { id: 18, cat: "안내 및 환대", jp: ["わざわざ、", "ありがとう", "ございます。"], rd: ["와자와자", "아리가토오", "고자이마스"], mn: ["일부러", "감사", "합니다"] },
-            // 4. 소개 및 제시
-            { id: 19, cat: "소개 및 제시", jp: ["こちらは", "部長의", "松本です。"], rd: ["코치라와", "부쵸오노", "마츠모토데스"], mn: ["이쪽은", "부장인", "마쓰모토입니다"] },
+            { id: 19, cat: "소개 및 제시", jp: ["こちらは", "部長の", "松本です。"], rd: ["코치라와", "부쵸오노", "마츠모토데스"], mn: ["이쪽은", "부장인", "마쓰모토입니다"] },
             { id: 20, cat: "소개 및 제시", jp: ["こちらは韓国から", "お越しのパクさんで", "いらっしゃいます"], rd: ["코치라와 칸코쿠카라", "오코시노 파쿠산데", "이랏샤이마스"], mn: ["이쪽은 한국에서", "오신 박진 씨", "이십니다"] },
-            { id: 21, cat: "소개 및 제시", jp: ["こちらは、", "新商品で", "ございます。"], rd: ["코치라와", "신쇼오힌데", "고자이마스"], mn: ["이쪽은", "신상품", "입니다"] },
-            { id: 22, cat: "소개 및 제시", jp: ["こちらが", "契約書で", "ございます。"], rd: ["코치라가", "케이야쿠쇼데", "고자이마스"], mn: ["이쪽이", "계약서", "입니다"] },
+            { id: 21, cat: "소개 및 제시", jp: ["こちらは、", "신상품데", "고자이마스"], rd: ["코치라와", "신쇼오힌데", "고자이마스"], mn: ["이쪽은", "신상품", "입니다"] },
+            { id: 22, cat: "소개 및 제시", jp: ["こちらが", "계약서데", "고자이마스"], rd: ["코치라가", "케이야쿠쇼데", "고자이마스"], mn: ["이쪽이", "계약서", "입니다"] },
             { id: 23, cat: "소개 및 제시", jp: ["佐藤さんこちらは", "部長の", "松本입니다。"], rd: ["사토오산 코치라와", "부쵸오노", "마츠모토데스"], mn: ["사토 씨 이쪽은", "부장인", "마쓰모토입니다"] },
             { id: 24, cat: "소개 및 제시", jp: ["初めまして", "部長の", "松本입니다。"], rd: ["하지메마시테", "부쵸오노", "마츠모토데스"], mn: ["처음 뵙겠습니다", "부장인", "마쓰모토입니다"] },
-            { id: 25, cat: "소개 및 제시", jp: ["初めまして", "日本物産の", "佐藤입니다。"], rd: ["하지메마시테", "니혼붓산노", "사토오데스"], mn: ["처음 뵙겠습니다", "일본물산의", "사토입니다"] },
-            // 5. 화답 및 협력
+            { id: 25, cat: "소개 및 제시", jp: ["初めまして", "日本물산노", "사토오데스"], rd: ["하지메마시테", "니혼붓산노", "사토오데스"], mn: ["처음 뵙겠습니다", "일본물산의", "사토입니다"] },
             { id: 26, cat: "화답 및 협력", jp: ["こちらこそ、", "よろしく", "お願いします。"], rd: ["코치라코소", "요로시쿠", "오네가이시마스"], mn: ["저야말로", "잘", "부탁드립니다"] },
             { id: 27, cat: "화답 및 협력", jp: ["こちらこそ、", "いつもお世話に", "なっております。"], rd: ["코치라코소", "이츠모 오세와니", "낫테오리마스"], mn: ["저야말로", "항상 신세", "지고 있습니다"] },
             { id: 28, cat: "화답 및 협력", jp: ["こちらこそ、", "おかげさまで", "売上げ順調です。"], rd: ["코치라코소", "오카게사마데", "우리아게 쥰쵸오데스"], mn: ["저야말로", "덕분에", "매출이 순조롭습니다"] },
@@ -166,7 +180,6 @@
         ];
 
         function setLanguageMode(mode) {
-            // 전환 전 현재 위치 저장
             saveCurrentPosition();
             document.body.className = `show-${mode}`;
             document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
@@ -175,7 +188,6 @@
         }
 
         function switchLayout(mode) {
-            // 전환 전 현재 위치 저장
             saveCurrentPosition();
             const view = document.getElementById('study-view');
             document.getElementById('btn-hor').classList.toggle('active', mode === 'horizontal');
@@ -184,16 +196,13 @@
             renderAndRestore();
         }
 
-        // 현재 화면 중앙에 있는 카드의 인덱스를 찾는 함수
         function saveCurrentPosition() {
-            const container = document.getElementById('study-view');
             const blocks = document.querySelectorAll('.phrase-block');
             let closestIndex = 0;
             let minDiff = Infinity;
-
             blocks.forEach((block, index) => {
                 const rect = block.getBoundingClientRect();
-                const diff = Math.abs(rect.top); // 상단 기준 가장 가까운 카드 찾기
+                const diff = Math.abs(rect.top);
                 if (diff < minDiff) {
                     minDiff = diff;
                     closestIndex = index;
@@ -202,7 +211,6 @@
             currentCardIndex = closestIndex;
         }
 
-        // 렌더링 후 저장된 위치로 스크롤 이동
         function renderAndRestore() {
             render();
             const blocks = document.querySelectorAll('.phrase-block');
