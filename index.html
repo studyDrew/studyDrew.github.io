@@ -1,302 +1,308 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Business Japanese Impact - Smart Persistence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일본어 학습 통합 앱</title>
+    <script src="words.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background-color: #000; color: #fff; font-family: -apple-system, sans-serif; overflow: hidden; }
-
-        /* 1. 상단 네비게이션 */
-        .apple-nav {
-            position: fixed; top: 0; width: 100%; height: 65px;
-            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(20px);
-            z-index: 10000; border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-            display: flex; justify-content: space-between; align-items: center; padding: 0 15px;
-        }
-        .nav-title { font-weight: 700; font-size: 11px; color: #666; letter-spacing: 1px; }
-        .nav-menu { display: flex; gap: 12px; }
-        .menu-btn { 
-            background: #222; color: #fff; border: none; padding: 8px 24px; min-width: 100px; height: 45px;
-            border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.2s;
-        }
-        .menu-btn.active { background: #6200ee; font-weight: bold; }
-
-        /* 2. 3단 언어 제어 탭 */
-        .display-tab {
-            position: fixed; top: 65px; width: 100%; height: 45px;
-            display: flex; z-index: 9999; background: #111; border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-        }
-        .tab-item { 
-            flex: 1; display: flex; justify-content: center; align-items: center; 
-            font-size: 13px; font-weight: 600; color: #666; cursor: pointer; transition: 0.3s; position: relative;
-        }
-        .tab-item.active { color: #fff; }
-        .tab-item.active::after { 
-            content: ''; position: absolute; bottom: 0; width: 100%; height: 2px; background: #6200ee; 
+        :root {
+            --primary: #3498db; --success: #2ecc71; --danger: #e74c3c;
+            --study: #8e44ad; --bg: #f0f4f8; --white: #ffffff; --text: #2c3e50;
+            --list: #f39c12; /* 문장 리스트 메뉴 색상 추가 */
         }
 
-        /* 3. 메인 컨테이너 */
-        .study-container { 
-            height: 100vh; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; padding-top: 110px;
-        }
-        .study-container::-webkit-scrollbar { display: none; }
+        body { font-family: 'Meiryo', sans-serif; background: var(--bg); text-align: center; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .box { background: var(--white); width: 500px; height: 750px; padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); position: relative; color: var(--text); display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+        
+        /* 문장 리스트 화면 추가 */
+        #mainMenu, #studyMode, #typingStart, #typingGame, #quizGame, #resultScreen, #sentenceListMode { width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        #mainMenu { display: flex; }
 
-        .phrase-block {
-            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            scroll-snap-align: start; position: relative; overflow: hidden;
-        }
+        .title { font-size: 28px; font-weight: bold; margin-bottom: 30px; color: var(--text); }
+        .menu-container { display: flex; flex-direction: column; gap: 12px; width: 100%; } /* 간격 살짝 조정 */
+        .btn-menu { width: 100%; height: 85px; font-size: 22px; cursor: pointer; border: none; border-radius: 18px; color: white; font-weight: bold; transition: 0.3s; }
+        .btn-study { background: var(--study); box-shadow: 0 6px 20px rgba(142, 68, 173, 0.3); }
+        .btn-typing { background: var(--primary); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.3); }
+        .btn-quiz { background: var(--success); box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3); }
+        .btn-list { background: var(--list); box-shadow: 0 6px 20px rgba(243, 156, 18, 0.3); } /* 리스트 버튼 스타일 */
+        .btn-menu:hover { transform: translateY(-5px); filter: brightness(1.05); }
 
-        .category-tag { 
-            position: absolute; top: 150px; font-size: 14px; color: #6200ee; font-weight: 900; letter-spacing: 5px; opacity: 0;
-            transform: translateY(-500px) scale(2);
-        }
+        /* 문장 리스트 전용 스타일 */
+        .list-container { width: 100%; flex: 1; overflow-y: auto; background: #f8f9fa; border-radius: 20px; padding: 10px; box-sizing: border-box; text-align: left; margin-bottom: 15px; }
+        .list-item { padding: 12px; border-bottom: 1px solid #eee; }
+        .list-jp { color: var(--study); font-weight: bold; font-size: 18px; margin-bottom: 4px; }
+        .list-kr { color: var(--text); font-size: 15px; }
+        .list-ro { color: #95a5a6; font-size: 13px; }
 
-        /* 레이아웃 */
-        .mode-horizontal .sentence-area { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; }
-        .mode-vertical .sentence-area { display: flex; flex-direction: column; align-items: center; gap: 35px; width: 100%; }
-
-        .chunk-pair { display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; opacity: 0; }
-
-        /* 글자 스타일 */
-        .chunk { text-align: center; transform: translateY(-500px) scale(2); word-break: keep-all; opacity: 0; }
-        .chunk.jp { font-size: 36px; font-weight: 800; color: #fff; }
-        .chunk.rd { font-size: 16px; font-weight: 500; color: #888; margin-bottom: 5px; } 
-        .chunk.ko { color: #03dac6; font-size: 24px; font-weight: 700; border-top: 2px solid #333; padding-top: 8px; }
-
-        /* 표시 제어 */
-        .chunk.jp, .chunk.rd, .chunk.ko { display: none; }
-        body.show-all .chunk.jp, body.show-all .chunk.rd, body.show-all .chunk.ko { display: block; }
-        body.show-jp .chunk.jp { display: block; }
-        body.show-ko .chunk.ko { display: block; border-top: none; padding-top: 0; }
-
-        /* 애니메이션 */
-        .phrase-block.active .category-tag,
-        .phrase-block.active .chunk { animation: jobsDropImpact 0.5s cubic-bezier(0.2, 0, 0.4, 1.4) forwards; }
-        .phrase-block.active .chunk-pair { animation: superShake 0.15s forwards; }
-
-        @keyframes jobsDropImpact {
-            0% { opacity: 0; transform: translateY(-500px) scale(2); }
-            60% { opacity: 1; transform: translateY(0) scale(1); }
-            80% { transform: translateY(-15px) scale(1.02); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @keyframes superShake { 
-            0%, 100% { transform: translateY(0); opacity: 1; } 
-            50% { transform: translateY(10px); opacity: 1; } 
-        }
-
-        /* [수정] 순차적 딜레이 제어 (모두표시 & 일본어만) */
-        body.show-all .phrase-block.active .chunk-pair:nth-child(1),
-        body.show-all .phrase-block.active .chunk-pair:nth-child(1) .chunk,
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(1),
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(1) .chunk { animation-delay: 0.1s; }
-
-        body.show-all .phrase-block.active .chunk-pair:nth-child(2),
-        body.show-all .phrase-block.active .chunk-pair:nth-child(2) .chunk,
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(2),
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(2) .chunk { animation-delay: 0.7s; }
-
-        body.show-all .phrase-block.active .chunk-pair:nth-child(3),
-        body.show-all .phrase-block.active .chunk-pair:nth-child(3) .chunk,
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(3),
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(3) .chunk { animation-delay: 1.3s; }
-
-        /* [수정] 한국어 모드: 모든 청크 동시 드롭 유지 */
-        body.show-ko .phrase-block.active .chunk-pair,
-        body.show-ko .phrase-block.active .chunk { animation-delay: 0.2s !important; }
-
-        /* 먼지 효과 */
-        .dust-container { position: absolute; width: 100px; height: 20px; bottom: 0; pointer-events: none; }
-        .dust-particle { position: absolute; left: 50%; background: rgba(220, 220, 220, 0.7); border-radius: 50%; filter: blur(6px); opacity: 0; }
-        .phrase-block.active .dust-particle { animation: dustBurstImpact 0.8s ease-out forwards; }
-
-        /* 먼지 효과 딜레이 연동 */
-        body.show-all .phrase-block.active .chunk-pair:nth-child(1) .dust-particle,
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(1) .dust-particle { animation-delay: 0.1s; }
-        body.show-all .phrase-block.active .chunk-pair:nth-child(2) .dust-particle,
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(2) .dust-particle { animation-delay: 0.7s; }
-        body.show-all .phrase-block.active .chunk-pair:nth-child(3) .dust-particle,
-        body.show-jp .phrase-block.active .chunk-pair:nth-child(3) .dust-particle { animation-delay: 1.3s; }
-        body.show-ko .phrase-block.active .dust-particle { animation-delay: 0.2s !important; }
-
-        @keyframes dustBurstImpact { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(6); } }
+        /* 쇼츠 스타일 */
+        .shorts-container { width: 100%; height: 500px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; border-radius: 20px; background: #f8f9fa; }
+        .shorts-container::-webkit-scrollbar { display: none; }
+        .shorts-card { width: 100%; height: 100%; scroll-snap-align: start; display: flex; flex-direction: column; justify-content: center; align-items: center; border-bottom: 1px solid #eee; position: relative; cursor: pointer; user-select: none; }
+        .shorts-jp { width: 100%; max-width: 420px; font-weight: bold; color: var(--study); margin-bottom: 15px; padding: 0 20px; box-sizing: border-box; word-break: keep-all; overflow-wrap: break-word; line-height: 1.4; text-align: center; }
+        .shorts-kr { width: 100%; max-width: 420px; font-weight: bold; color: var(--success); display: none; padding: 0 20px; box-sizing: border-box; word-break: keep-all; overflow-wrap: break-word; line-height: 1.4; text-align: center; }
+        .shorts-ro { width: 100%; max-width: 420px; font-size: 16px; color: #95a5a6; margin-bottom: 20px; padding: 0 20px; box-sizing: border-box; word-break: break-all; }
+        
+        input, select { width: 100%; padding: 15px; font-size: 22px; border: 2px solid #ddd; border-radius: 12px; text-align: center; margin-bottom: 15px; box-sizing: border-box; }
+        .q-jp { font-weight: bold; margin-bottom: 10px; width: 100%; max-width: 420px; box-sizing: border-box; word-break: keep-all; overflow-wrap: break-word; line-height: 1.3; }
+        .timer-container { width: 100%; height: 12px; background: #eee; margin-top: 25px; border-radius: 10px; overflow: hidden; }
+        .bar { width: 100%; height: 100%; background: var(--success); transition: width 0.1s linear; }
+        .btn-action { width: 100%; padding: 18px; font-size: 18px; font-weight: bold; cursor: pointer; border: none; border-radius: 12px; margin-top: 15px; }
+        .btn-home-style { background: #95a5a6; color: white; }
+        .btn-stop-style { background: var(--danger); color: white; }
+        .feedback-text { visibility: hidden; font-size: 26px; font-weight: bold; margin-top: 15px; height: 35px; }
+        .option-btn { width: 100%; padding: 15px; font-size: 20px; background: white; border: 2px solid #eee; border-radius: 12px; cursor: pointer; transition: 0.2s; margin-bottom: 8px; }
+        .option-btn:hover { background: #f8f9fa; border-color: var(--primary); }
     </style>
 </head>
-<body class="show-all">
+<body>
 
-    <nav class="apple-nav">
-        <div class="nav-title">BJ IMPACT</div>
-        <div class="nav-menu">
-            <button id="btn-hor" class="menu-btn active" onclick="switchLayout('horizontal')">가로형태</button>
-            <button id="btn-ver" class="menu-btn" onclick="switchLayout('vertical')">세로형태</button>
+<div class="box">
+    <div id="mainMenu">
+        <div class="title">일본어 학습 통합 앱</div>
+        <div class="menu-container">
+            <button class="btn-menu btn-study" onclick="startStudy()">일본어 공부</button>
+            <button class="btn-menu btn-typing" onclick="showScreen('typingStart')">타이핑 연습</button>
+            <button class="btn-menu btn-quiz" onclick="startQuizMode()">단어 퀴즈</button>
+            <button class="btn-menu btn-list" onclick="showSentenceList()">문장 리스트</button>
         </div>
-    </nav>
-
-    <div class="display-tab">
-        <div id="tab-all" class="tab-item active" onclick="setLanguageMode('all')">모두표시</div>
-        <div id="tab-jp" class="tab-item" onclick="setLanguageMode('jp')">일본어만</div>
-        <div id="tab-ko" class="tab-item" onclick="setLanguageMode('ko')">한국어만</div>
     </div>
 
-    <div id="study-view" class="study-container mode-horizontal"></div>
+    <div id="sentenceListMode">
+        <div class="title" style="margin-bottom:15px;">전체 문장 리스트</div>
+        <div class="list-container" id="listContainer"></div>
+        <button class="btn-action btn-home-style" onclick="showScreen('mainMenu')">홈으로</button>
+    </div>
 
-    <script>
-        let currentCardIndex = 0;
+    <div id="studyMode">
+        <div class="title" style="margin-bottom:10px;">플래시 카드</div>
+        <div class="shorts-container" id="shortsContainer"></div>
+        <div class="swipe-hint" style="font-size:13px; color:#bdc3c7; margin-top:10px;">클릭: 정답 확인 | 스와이프: 이동</div>
+        <button class="btn-action btn-home-style" onclick="showScreen('mainMenu')">홈으로</button>
+    </div>
 
-        const phrasesData = [
-            { id: 1, cat: "첫 인사", jp: ["初めて", "ご挨拶", "差し上げます。"], rd: ["하지메테", "고아이사츠", "사시아게마스"], mn: ["처음", "인사", "드립니다"] },
-            { id: 2, cat: "첫 인사", jp: ["初めて", "お会い", "いたします。"], rd: ["하지메테", "오아이", "이타시마스"], mn: ["처음", "뵙겠", "습니다"] },
-            { id: 3, cat: "첫 인사", jp: ["初めて", "ご連絡", "差し上げます。"], rd: ["하지메테", "고렌라쿠", "사시아게마스"], mn: ["처음", "연락", "드립니다"] },
-            { id: 4, cat: "첫 인사", jp: ["初めて", "メール", "差し上げます。"], rd: ["하지메테", "메-루", "사시아게마스"], mn: ["처음", "메일", "드립니다"] },
-            { id: 5, cat: "첫 인사", jp: ["メールでは", "ご挨拶しましたが", "初めてお会いします"], rd: ["메-루데와", "고아이사츠 시마시타가", "하지메테 오아이시마스"], mn: ["메일로는", "인사드렸습니다만", "처음 뵙겠습니다"] },
-            { id: 6, cat: "첫 인사", jp: ["初めまして", "どうぞよろしく", "お願いします。"], rd: ["하지메마시테", "도오조 요로시쿠", "오네가이시마스"], mn: ["처음 뵙겠습니다", "잘", "부탁드립니다"] },
-            { id: 7, cat: "자기 소개", jp: ["私、", "キムミナと", "申します。"], rd: ["와타쿠시", "키무미나토", "모오시마스"], mn: ["저는", "김미나라고", "합니다"] },
-            { id: 8, cat: "자기 소개", jp: ["鈴木と", "申します。", ""], rd: ["스즈키토", "모오시마스", ""], mn: ["스즈키라고", "합니다", ""] },
-            { id: 9, cat: "자기 소개", jp: ["マーケティング部の", "渡辺勇樹と", "申します。"], rd: ["마-케팅구부노", "와타나베 유우키토", "모오시마스"], mn: ["마케팅부", "와타나베 유키라고", "합니다"] },
-            { id: 10, cat: "자기 소개", jp: ["広報担当の", "太田順と", "申합니다。"], rd: ["코오호오탄토오노", "오오타 쥰토", "모오시마스"], mn: ["홍보 담당인", "오타 준이라고", "합니다"] },
-            { id: 11, cat: "자기 소개", jp: ["初めまして", "営業部の", "이횬시쿠토 모오시마스"], rd: ["하지메마시테", "에이교오부노", "이횬시쿠토 모오시마스"], mn: ["처음 뵙겠습니다", "영업부의", "이형식이라고 합니다"] },
-            { id: 12, cat: "자기 소개", jp: ["初めまして", "課長の", "鈴木と 모오시마스"], rd: ["하지메마시테", "카쵸오노", "스즈키토 모오시마스"], mn: ["처음 뵙겠습니다", "과장인", "스즈키라고 합니다"] },
-            { id: 13, cat: "안내 및 환대", jp: ["どうぞ、", "こちらへ。", ""], rd: ["도오조", "코치라에", ""], mn: ["어서", "이쪽으로", "오세요"] },
-            { id: 14, cat: "안내 및 환대", jp: ["どうぞ、", "お入り", "ください。"], rd: ["도오조", "오하이리", "쿠다사이"], mn: ["어서", "들어", "오세요"] },
-            { id: 15, cat: "안내 및 환대", jp: ["どうぞ、", "お召し上がり", "ください。"], rd: ["도오조", "오메시아가리", "쿠다사이"], mn: ["어서", "드세요", ""] },
-            { id: 16, cat: "안내 및 환대", jp: ["こちら、", "どうぞ。", ""], rd: ["코치라", "도오조", ""], mn: ["이거", "받으세요", ""] },
-            { id: 17, cat: "안내 및 환대", jp: ["つまらない", "ものですが", "こちらどうぞ"], rd: ["츠마라나이", "모노데스가", "코치라 도오조"], mn: ["변변찮습니다만", "이거", "받으세요"] },
-            { id: 18, cat: "안내 및 환대", jp: ["わざわざ、", "ありがとう", "ございます。"], rd: ["와자와자", "아리가토오", "고자이마스"], mn: ["일부러", "감사", "합니다"] },
-            { id: 19, cat: "소개 및 제시", jp: ["こちらは", "部長の", "松本です。"], rd: ["코치라와", "부쵸오노", "마츠모토데스"], mn: ["이쪽은", "부장인", "마쓰모토입니다"] },
-            { id: 20, cat: "소개 및 제시", jp: ["こちらは韓国から", "お越しのパクさんで", "いらっしゃいます"], rd: ["코치라와 칸코쿠카라", "오코시노 파쿠산데", "이랏샤이마스"], mn: ["이쪽은 한국에서", "오신 박진 씨", "이십니다"] },
-            { id: 21, cat: "소개 및 제시", jp: ["こちらは、", "신상품데", "고자이마스"], rd: ["코치라와", "신쇼오힌데", "고자이마스"], mn: ["이쪽은", "신상품", "입니다"] },
-            { id: 22, cat: "소개 및 제시", jp: ["こちらが", "계약서데", "고자이마스"], rd: ["코치라가", "케이야쿠쇼데", "고자이마스"], mn: ["이쪽이", "계약서", "입니다"] },
-            { id: 23, cat: "소개 및 제시", jp: ["佐藤さんこちらは", "部長の", "松本입니다。"], rd: ["사토오산 코치라와", "부쵸오노", "마츠모토데스"], mn: ["사토 씨 이쪽은", "부장인", "마쓰모토입니다"] },
-            { id: 24, cat: "소개 및 제시", jp: ["初めまして", "部長の", "松本입니다。"], rd: ["하지메마시테", "부쵸오노", "마츠모토데스"], mn: ["처음 뵙겠습니다", "부장인", "마쓰모토입니다"] },
-            { id: 25, cat: "소개 및 제시", jp: ["初めまして", "日本물산노", "사토오데스"], rd: ["하지메마시테", "니혼붓산노", "사토오데스"], mn: ["처음 뵙겠습니다", "일본물산의", "사토입니다"] },
-            { id: 26, cat: "화답 및 협력", jp: ["こちらこそ、", "よろしく", "お願いします。"], rd: ["코치라코소", "요로시쿠", "오네가이시마스"], mn: ["저야말로", "잘", "부탁드립니다"] },
-            { id: 27, cat: "화답 및 협력", jp: ["こちらこそ、", "いつもお世話に", "なっております。"], rd: ["코치라코소", "이츠모 오세와니", "낫테오리마스"], mn: ["저야말로", "항상 신세", "지고 있습니다"] },
-            { id: 28, cat: "화답 및 협력", jp: ["こちらこそ、", "おかげさまで", "売上げ順調です。"], rd: ["코치라코소", "오카게사마데", "우리아게 쥰쵸오데스"], mn: ["저야말로", "덕분에", "매출이 순조롭습니다"] },
-            { id: 29, cat: "화답 및 협력", jp: ["こちらこそ、今後とも", "ご協力のほど", "お願いします。"], rd: ["코치라코소 콩고토모", "고쿄오료쿠노호도", "오네가이시마스"], mn: ["저야말로 앞으로도", "협조를", "부탁드립니다"] },
-            { id: 30, cat: "화답 및 협력", jp: ["御社が協力して", "くださったおかげで", "成功しました"], rd: ["온샤가 쿄오료쿠시테", "쿠다삿타 오카게데", "세이코오시마시타"], mn: ["귀사가 협력해", "주신 덕분에", "성공했습니다"] },
-            { id: 31, cat: "화답 및 협력", jp: ["貴重な機会に", "参加させていただき", "ありがとうございました"], rd: ["키쵸오나 키카이니", "산카사세테 이타다키", "아리가토오 고자이마시타"], mn: ["귀중한 기회에", "참가하게 해주셔서", "감사합니다"] }
-        ];
+    <div id="typingStart">
+        <div class="title">타이핑 설정</div>
+        <p>제한 시간 선택 (초)</p>
+        <select id="timeSelect">
+            <option value="5">5초 (매우 빠름)</option>
+            <option value="10" selected>10초 (보통)</option>
+            <option value="20">20초 (느긋하게)</option>
+        </select>
+        <button class="btn-action btn-typing" style="color:white; font-size:22px;" onclick="initGame('typing')">시작하기</button>
+        <button class="btn-action btn-home-style" onclick="showScreen('mainMenu')">홈으로</button>
+    </div>
 
-        function setLanguageMode(mode) {
-            saveCurrentPosition();
-            document.body.className = `show-${mode}`;
-            document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${mode}`).classList.add('active');
-            renderAndRestore();
+    <div id="typingGame">
+        <div id="roundText" style="font-size:16px; color:#95a5a6; margin-bottom:15px;">ROUND 1 / 10</div>
+        <div class="q-jp" id="target">-</div>
+        <div id="targetKr" style="color:#95a5a6; margin-bottom:20px; font-size:20px;">뜻</div>
+        <input type="text" id="answer" oninput="checkTyping()" autocomplete="off" placeholder="일본어를 입력하세요">
+        <div class="timer-container"><div id="typingBar" class="bar"></div></div>
+        <div id="typingFeedback" class="feedback-text">정답!</div>
+        <button class="btn-action btn-stop-style" onclick="showScreen('mainMenu')">중단하기</button>
+    </div>
+
+    <div id="quizGame">
+        <div id="quizRoundText" style="font-size:16px; color:#95a5a6; margin-bottom:15px;">ROUND 1 / 10</div>
+        <div class="q-jp" id="quizTarget">-</div>
+        <div id="quizOptions" style="width:100%; margin-top:10px;"></div>
+        <div class="timer-container"><div id="quizBar" class="bar"></div></div>
+        <div id="quizFeedback" class="feedback-text">정답!</div>
+        <button class="btn-action btn-stop-style" onclick="showScreen('mainMenu')">중단하기</button>
+    </div>
+
+    <div id="resultScreen">
+        <div class="title">학습 결과</div>
+        <div id="finalScoreNum" style="font-size:40px; font-weight:bold; color:var(--primary);">0</div>
+        <div id="answerList" style="flex:1; overflow-y:auto; width:100%; margin:20px 0; text-align:left; font-size:14px;"></div>
+        <button class="btn-action btn-typing" id="retryBtn" onclick="" style="color:white;">다시하기</button>
+        <button class="btn-action btn-home-style" onclick="showScreen('mainMenu')">홈으로</button>
+    </div>
+</div>
+
+<script>
+    let words = typeof wordData !== 'undefined' ? wordData : [];
+    let score = 0, currentRound = 0, totalRounds = 10, timeLeft = 100;
+    let timerInterval, currentWord, gameMode = "", sessionHistory = [];
+
+    function showScreen(id) {
+        clearInterval(timerInterval);
+        const screens = ["mainMenu", "studyMode", "typingStart", "typingGame", "quizGame", "resultScreen", "sentenceListMode"];
+        screens.forEach(s => {
+            const el = document.getElementById(s);
+            if(el) el.style.display = (s === id) ? "flex" : "none";
+        });
+
+        if (id === 'mainMenu') {
+            const container = document.getElementById('shortsContainer');
+            if (container) container.scrollTop = 0; 
         }
+    }
 
-        function switchLayout(mode) {
-            saveCurrentPosition();
-            const view = document.getElementById('study-view');
-            document.getElementById('btn-hor').classList.toggle('active', mode === 'horizontal');
-            document.getElementById('btn-ver').classList.toggle('active', mode === 'vertical');
-            view.className = `study-container mode-${mode}`;
-            renderAndRestore();
+    // 신규 추가: 문장 리스트 보여주기
+    function showSentenceList() {
+        if(words.length === 0) return alert("데이터가 없습니다.");
+        showScreen('sentenceListMode');
+        const container = document.getElementById('listContainer');
+        container.innerHTML = words.map((item, index) => `
+            <div class="list-item">
+                <div style="font-size:12px; color:#bdc3c7;">#${index + 1}</div>
+                <div class="list-jp">${item.jp}</div>
+                <div class="list-ro">${item.ro}</div>
+                <div class="list-kr">${item.kr}</div>
+            </div>
+        `).join('');
+        container.scrollTop = 0;
+    }
+
+    function startStudy() {
+        if(words.length === 0) return alert("데이터가 없습니다.");
+        showScreen('studyMode');
+        const container = document.getElementById('shortsContainer');
+        container.innerHTML = "";
+        container.scrollTop = 0; 
+
+        words.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'shorts-card';
+            card.dataset.view = "jp";
+
+            let len = item.jp.length;
+            let jpSize, krSize;
+            if (len > 40) { jpSize = "20px"; krSize = "18px"; } 
+            else if (len > 30) { jpSize = "24px"; krSize = "22px"; } 
+            else if (len > 20) { jpSize = "28px"; krSize = "24px"; } 
+            else if (len > 10) { jpSize = "34px"; krSize = "28px"; } 
+            else { jpSize = "45px"; krSize = "36px"; }
+
+            card.innerHTML = `
+                <div class="shorts-index">${index + 1} / ${words.length}</div>
+                <div class="shorts-jp" style="font-size: ${jpSize}">${item.jp}</div>
+                <div class="shorts-ro">${item.ro}</div>
+                <div class="shorts-kr" style="font-size: ${krSize}">${item.kr}</div>
+            `;
+
+            card.onclick = function() {
+                const isJp = this.dataset.view === "jp";
+                this.querySelector('.shorts-jp').style.display = isJp ? "none" : "block";
+                this.querySelector('.shorts-ro').style.display = isJp ? "none" : "block";
+                this.querySelector('.shorts-kr').style.display = isJp ? "block" : "none";
+                this.dataset.view = isJp ? "kr" : "jp";
+            };
+            container.appendChild(card);
+        });
+    }
+
+    function initGame(mode) {
+        gameMode = mode;
+        score = 0; currentRound = 0; sessionHistory = [];
+        document.getElementById('retryBtn').onclick = () => initGame(mode);
+        nextRound();
+    }
+
+    function startQuizMode() { initGame('quiz'); }
+
+    function getFontSize(text) {
+        let len = text.length;
+        if (len > 40) return "20px";
+        if (len > 30) return "24px";
+        if (len > 20) return "28px";
+        if (len > 10) return "34px";
+        return "42px";
+    }
+
+    function nextRound() {
+        if (currentRound >= totalRounds) return finishGame();
+        currentRound++;
+        currentWord = words[Math.floor(Math.random() * words.length)];
+        timeLeft = 100;
+        const autoSize = getFontSize(currentWord.jp);
+
+        if (gameMode === 'typing') {
+            showScreen('typingGame');
+            document.getElementById('roundText').innerText = `ROUND ${currentRound} / ${totalRounds}`;
+            const targetEl = document.getElementById('target');
+            targetEl.innerText = currentWord.jp;
+            targetEl.style.fontSize = autoSize;
+            document.getElementById('targetKr').innerText = currentWord.kr;
+            document.getElementById('answer').value = "";
+            document.getElementById('answer').focus();
+            startTimer('typingBar');
+        } else {
+            showScreen('quizGame');
+            document.getElementById('quizRoundText').innerText = `ROUND ${currentRound} / ${totalRounds}`;
+            const quizTargetEl = document.getElementById('quizTarget');
+            quizTargetEl.innerText = currentWord.jp;
+            quizTargetEl.style.fontSize = autoSize;
+            makeQuizOptions();
+            startTimer('quizBar');
         }
+    }
 
-        function saveCurrentPosition() {
-            const blocks = document.querySelectorAll('.phrase-block');
-            let closestIndex = 0;
-            let minDiff = Infinity;
-            blocks.forEach((block, index) => {
-                const rect = block.getBoundingClientRect();
-                const diff = Math.abs(rect.top);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestIndex = index;
-                }
-            });
-            currentCardIndex = closestIndex;
-        }
-
-        function renderAndRestore() {
-            render();
-            const blocks = document.querySelectorAll('.phrase-block');
-            if (blocks[currentCardIndex]) {
-                blocks[currentCardIndex].scrollIntoView();
+    function startTimer(barId) {
+        clearInterval(timerInterval);
+        const bar = document.getElementById(barId);
+        const limit = gameMode === 'typing' ? parseInt(document.getElementById('timeSelect').value) : 10;
+        const step = 100 / (limit * 10);
+        timerInterval = setInterval(() => {
+            timeLeft -= step;
+            bar.style.width = timeLeft + "%";
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                processResult(false, "시간 초과");
             }
+        }, 100);
+    }
+
+    function checkTyping() {
+        const input = document.getElementById('answer').value.trim();
+        if (input === currentWord.jp || input === currentWord.ro) {
+            processResult(true, "정답!");
         }
+    }
 
-        function createDust(parent) {
-            const container = document.createElement('div');
-            container.className = 'dust-container';
-            for(let i=0; i<12; i++) {
-                const angle = (i / 12) * Math.PI * 2;
-                const dist = 100 + Math.random() * 80;
-                const dx = Math.cos(angle) * dist + 'px';
-                const dy = (Math.sin(angle) * 40 + 20) + 'px';
-                const size = Math.random() * 18 + 6 + 'px';
-                const d = document.createElement('div');
-                d.className = 'dust-particle';
-                d.style.width = size; d.style.height = size;
-                d.style.setProperty('--dx', dx); d.style.setProperty('--dy', dy);
-                container.appendChild(d);
-            }
-            parent.appendChild(container);
+    function makeQuizOptions() {
+        const container = document.getElementById('quizOptions');
+        container.innerHTML = "";
+        let options = [currentWord.kr];
+        while(options.length < 4) {
+            let rand = words[Math.floor(Math.random() * words.length)].kr;
+            if(!options.includes(rand)) options.push(rand);
         }
+        options.sort(() => Math.random() - 0.5);
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => processResult(opt === currentWord.kr, opt === currentWord.kr ? "정답!" : "오답");
+            container.appendChild(btn);
+        });
+    }
 
-        function render() {
-            const view = document.getElementById('study-view');
-            view.innerHTML = '';
-            
-            phrasesData.forEach(p => {
-                const block = document.createElement('div');
-                block.className = 'phrase-block';
-                
-                const cat = document.createElement('div');
-                cat.className = 'category-tag';
-                cat.innerText = p.cat;
-                block.appendChild(cat);
+    function processResult(isCorrect, msg) {
+        clearInterval(timerInterval);
+        if(isCorrect) score++;
+        sessionHistory.push({word: currentWord.jp, kr: currentWord.kr, correct: isCorrect});
+        const feedback = document.getElementById(gameMode + 'Feedback');
+        feedback.innerText = msg;
+        feedback.style.visibility = "visible";
+        feedback.style.color = isCorrect ? "var(--success)" : "var(--danger)";
+        setTimeout(() => {
+            feedback.style.visibility = "hidden";
+            nextRound();
+        }, 1000);
+    }
 
-                const area = document.createElement('div');
-                area.className = 'sentence-area';
-
-                p.jp.forEach((text, i) => {
-                    if(!text && !p.rd[i] && !p.mn[i]) return;
-
-                    const pair = document.createElement('div');
-                    pair.className = 'chunk-pair';
-                    
-                    const jp = document.createElement('div');
-                    jp.className = 'chunk jp';
-                    jp.innerText = text;
-                    pair.appendChild(jp);
-
-                    const rd = document.createElement('div');
-                    rd.className = 'chunk rd';
-                    rd.innerText = p.rd[i];
-                    pair.appendChild(rd);
-
-                    const mn = document.createElement('div');
-                    mn.className = 'chunk ko';
-                    mn.innerText = p.mn[i];
-                    pair.appendChild(mn);
-
-                    createDust(pair);
-                    area.appendChild(pair);
-                });
-
-                block.appendChild(area);
-                view.appendChild(block);
-            });
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.remove('active');
-                        void entry.target.offsetWidth;
-                        entry.target.classList.add('active');
-                    } else {
-                        entry.target.classList.remove('active');
-                    }
-                });
-            }, { threshold: 0.5 });
-            document.querySelectorAll('.phrase-block').forEach(b => observer.observe(b));
-        }
-
-        window.onload = render;
-    </script>
+    function finishGame() {
+        showScreen('resultScreen');
+        document.getElementById('finalScoreNum').innerText = `${score} / ${totalRounds}`;
+        const list = document.getElementById('answerList');
+        list.innerHTML = sessionHistory.map(h => 
+            `<div style="padding:5px; border-bottom:1px solid #eee; color:${h.correct ? 'black' : 'red'}">
+                ${h.correct ? '✓' : '✗'} <b>${h.word}</b>: ${h.kr}
+            </div>`).join('');
+    }
+</script>
 </body>
 </html>
